@@ -1,0 +1,321 @@
+create database moviebookingsystem;
+use moviebookingsystem;
+-- drop database moviebookingsystem;
+
+-- roles table
+create table roles (
+    role_id int primary key auto_increment,
+    role_name varchar(50) unique not null
+);
+
+-- genres table
+create table genres (
+    genre_id int primary key auto_increment,
+    genre_name varchar(255) unique not null
+);
+
+-- locations table
+create table locations (
+    location_id int primary key auto_increment,
+    location_name varchar(255) unique not null
+);
+
+-- event_types table
+create table event_types (
+    event_type_id int auto_increment primary key,
+    event_type_name varchar(100) unique not null
+);
+
+-- payment_statuses table
+create table payment_statuses (
+    payment_status_id int auto_increment primary key,
+    payment_status_name varchar(20) not null
+);
+
+-- seat_types table
+create table seat_types (
+    seat_type_id int auto_increment primary key,
+    seat_type_name varchar(20)
+);
+
+-- membership_types table
+create table membership_types (
+    membership_type_id int auto_increment primary key,
+    membership_type_name varchar(20)
+);
+
+-- payment_methods table
+create table payment_methods (
+    payment_method_id int auto_increment primary key,
+    payment_method_name varchar(20)
+);
+
+-- events table (generalizing movies, standupcomedy, concerts, theaterplays)
+create table events (
+    event_id int auto_increment primary key,
+    event_name varchar(100) not null,
+    event_type_id int not null,
+    genre_id int,
+    performer varchar(100),
+    director varchar(100),
+    duration int,
+    language varchar(50),
+    release_date date,
+    foreign key (event_type_id) references event_types(event_type_id),
+    foreign key (genre_id) references genres(genre_id)
+);
+
+-- theaters table
+create table theaters (
+    theater_id int primary key auto_increment,
+    theater_name varchar(255) not null,
+    location_id int,
+    foreign key (location_id) references locations(location_id) on delete cascade
+);
+
+-- showtimes table
+create table showtimes (
+    showtime_id int primary key auto_increment,
+    event_id int not null,
+    theater_id int not null,
+    showtime datetime not null,
+    foreign key (event_id) references events(event_id) on delete cascade,
+    foreign key (theater_id) references theaters(theater_id) on delete cascade
+);
+
+-- seats table
+create table seats (
+    seat_id int primary key auto_increment,
+    theater_id int not null,
+    seat_number varchar(10) not null,
+    seat_type_id int not null,
+    price decimal(10,2) not null,
+    foreign key (theater_id) references theaters(theater_id) on delete cascade,
+    foreign key (seat_type_id) references seat_types(seat_type_id) on delete cascade
+);
+
+-- users table
+create table users (
+    user_id int primary key auto_increment,
+    username varchar(255) unique not null,
+    password varchar(255) not null,
+    name varchar(255) not null,
+    email varchar(255) unique not null,
+    phone_number varchar(20),
+    role_id int,
+    membership_type_id int not null default 1,
+    foreign key (role_id) references roles(role_id) on delete cascade,
+    foreign key (membership_type_id) references membership_types(membership_type_id) on delete cascade
+);
+
+-- bookings table
+create table bookings (
+    booking_id int primary key auto_increment,
+    user_id int not null,
+    showtime_id int not null,
+    booking_time datetime default current_timestamp,
+    payment_status_id int not null default 2,
+    foreign key (showtime_id) references showtimes(showtime_id) on delete cascade,
+    foreign key (user_id) references users(user_id) on delete cascade,
+    foreign key (payment_status_id) references payment_statuses(payment_status_id) on delete cascade
+);
+
+-- payments table
+create table payments (
+    payment_id int primary key auto_increment,
+    booking_id int not null,
+    amount decimal(10,2),
+    payment_method_id int not null,
+    transaction_date datetime default current_timestamp,
+    foreign key (booking_id) references bookings(booking_id) on delete cascade,
+    foreign key (payment_method_id) references payment_methods(payment_method_id) on delete cascade
+);
+
+-- Inserting data into roles table (parent)
+insert into roles (role_name) values
+('user'),
+('admin');
+
+-- Inserting data into genres table (parent)
+insert into genres (genre_name) values
+('action'),
+('comedy'),
+('sci-fi'),
+('drama'),
+('horror'),
+('thriller'),
+('adventure'),
+('romance'),
+('mystery'),
+('fantasy');
+
+-- Inserting data into locations table (parent)
+insert into locations (location_name) values
+('north dumdum'),
+('kolkata central'),
+('salt lake city'),
+('new town'),
+('gariahat');
+
+-- Inserting data into event_types table (parent)
+insert into event_types (event_type_name) values
+('movies'),
+('stand-up comedy'),
+('concert'),
+('theater play');
+
+-- Inserting data into payment_statuses table (parent)
+insert into payment_statuses (payment_status_name) values
+('completed'),
+('pending'),
+('failed');
+
+-- Inserting data into seat_types table (parent)
+insert into seat_types (seat_type_name) values
+('regular'),
+('premium'),
+('vip');
+
+-- Inserting data into membership_types table (parent)
+insert into membership_types (membership_type_name) values
+('silver'),
+('gold'),
+('platinum');
+
+-- Inserting data into payment_methods table (parent)
+insert into payment_methods (payment_method_name) values
+('upi'),
+('credit card'),
+('net banking'),
+('cash');
+
+-- Inserting data into events table (parent - referencing genres and event_types)
+insert into events (event_name, event_type_id, genre_id, director, duration, language, release_date, performer) values
+('avengers: endgame', 1, 1, 'anthony russo, joe russo', 181, 'english', '2019-04-26', null),
+('spider-man: into the spider-verse', 1, 10, 'bob persichetti, peter ramsey, rodney rothman', 117, 'english', '2018-12-14', null),
+('the dark knight', 1, 1, 'christopher nolan', 152, 'english', '2008-07-18', null),
+('parasite', 1, 4, 'bong joon-ho', 132, 'korean', '2019-05-30', null),
+('inception', 1, 3, 'christopher nolan', 148, 'english', '2010-07-16', null),
+('vir das: landing', 2, 2, 'na', 70, 'english', '2022-12-26', 'vir das'),
+('anubhav singh bassi: bas kar bassi', 2, 2, 'na', 85, 'hindi', '2023-01-11', 'anubhav singh bassi'),
+('arijit singh live in concert', 3, 8, 'na', 150, 'hindi', '2024-11-05', 'arijit singh'),
+('coldplay music of the spheres world tour', 3, 7, 'na', 160, 'english', '2023-05-14', 'coldplay'),
+('hamlet', 4, 4, 'william shakespeare', 180, 'english', '2025-03-15', null),
+('the shawshank redemption', 1, 4, 'frank darabont', 142, 'english', '1994-09-23', null),
+('spirited away', 1, 10, 'hayao miyazaki', 125, 'japanese', '2001-07-20', null),
+('munich', 1, 6, 'steven spielberg', 164, 'english', '2005-12-23', null),
+('trevor noah: afraid of the dark', 2, 2, 'na', 68, 'english', '2017-02-21', 'trevor noah'),
+('bill burr: paper tiger', 2, 2, 'na', 73, 'english', '2019-09-10', 'bill burr'),
+('sunburn festival', 3, 7, 'na', 360, 'various', '2024-12-27', 'various artists'),
+('metallica: m72 world tour', 3, 1, 'na', 150, 'english', '2023-08-18', 'metallica'),
+('a streetcar named desire', 4, 4, 'tennessee williams', 195, 'english', '2024-11-01', null),
+('waiting for godot', 4, 4, 'samuel beckett', 120, 'english', '2025-05-20', null);
+
+-- Inserting data into theaters table (parent - referencing locations)
+insert into theaters (theater_name, location_id) values
+('inox - city centre 1', 3),
+('pvr - diamond plaza', 4),
+('cinepolis - acropolis mall', 3),
+('bioscope - axis mall', 4),
+('carnival cinemas - star mall', 1),
+('miraj cinemas - diamond city south', 5),
+('galaxy cinema', 1),
+('city pride multiplex', 5),
+('fun cinemas - diamond heights', 5),
+('cineplex - junction mall', 2),
+('imax - south city mall', 5),
+('moviemax - uttarpara', 1),
+('pvr - forum mall', 2);
+
+-- Inserting data into showtimes table (child - referencing events and theaters)
+insert into showtimes (event_id, theater_id, showtime) values
+(1, 1, '2025-04-12 14:00:00'),
+(2, 1, '2025-04-12 17:00:00'),
+(3, 2, '2025-04-12 19:30:00'),
+(4, 3, '2025-04-13 11:00:00'),
+(5, 3, '2025-04-13 15:00:00'),
+(6, 4, '2025-04-12 20:00:00'),
+(7, 5, '2025-04-13 18:30:00'),
+(8, 2, '2025-04-14 20:30:00'),
+(9, 1, '2025-04-15 19:00:00'),
+(10, 6, '2025-04-13 14:30:00'),
+(11, 1, '2025-04-12 11:30:00'),
+(12, 2, '2025-04-12 15:00:00'),
+(13, 3, '2025-04-12 18:00:00'),
+(14, 4, '2025-04-13 21:00:00'),
+(15, 5, '2025-04-13 16:00:00'),
+(16, 6, '2025-04-14 19:30:00'),
+(17, 1, '2025-04-14 21:30:00'),
+(18, 3, '2025-04-15 14:00:00'),
+(19, 5, '2025-04-15 20:00:00'),
+(11, 4, '2025-04-16 10:00:00'),
+(12, 6, '2025-04-16 16:30:00'),
+(13, 2, '2025-04-17 12:00:00');
+
+-- Inserting data into seats table (child - referencing theaters and seat_types)
+insert into seats (theater_id, seat_number, seat_type_id, price) values
+(1, 'a1', 1, 150.00), (1, 'a2', 1, 150.00), (1, 'a3', 1, 150.00),
+(1, 'b1', 2, 200.00), (1, 'b2', 2, 200.00),
+(1, 'c1', 3, 250.00), (1, 'c2', 3, 250.00),
+(2, 'a1', 1, 160.00), (2, 'a2', 1, 160.00), (2, 'a3', 1, 160.00),
+(2, 'b1', 2, 220.00), (2, 'b2', 2, 220.00), (2, 'b3', 2, 220.00),
+(2, 'c1', 3, 280.00), (2, 'c2', 3, 280.00),
+(3, 'd1', 1, 140.00), (3, 'd2', 1, 140.00), (3, 'd3', 1, 140.00), (3, 'd4', 1, 140.00),
+(3, 'e1', 2, 190.00), (3, 'e2', 2, 190.00),
+(4, 'f1', 1, 170.00), (4, 'f2', 1, 170.00),
+(4, 'g1', 2, 210.00), (4, 'g2', 2, 210.00), (4, 'h1', 3, 260.00), (4, 'h2', 3, 260.00), (4, 'h3', 3, 260.00),
+(5, 'a1', 1, 145.00), (5, 'a2', 1, 145.00), (5, 'a3', 1, 145.00), (5, 'a4', 1, 145.00),
+(5, 'b1', 2, 195.00), (5, 'b2', 2, 195.00),
+(6, 'p1', 1, 180.00), (6, 'p2', 1, 180.00), (6, 'q1', 2, 230.00), (6, 'q2', 2, 230.00), (6, 'r1', 3, 290.00),
+(7, 's1', 1, 155.00), (7, 's2', 1, 155.00), (7, 't1', 2, 215.00), (7, 't2', 2, 215.00), (7, 'u1', 3, 275.00),
+(8, 'v1', 1, 175.00), (8, 'v2', 1, 175.00), (8, 'w1', 2, 225.00), (8, 'w2', 2, 225.00),
+(9, 'x1', 1, 165.00), (9, 'x2', 1, 165.00), (9, 'y1', 2, 215.00), (9, 'y2', 2, 215.00), (9, 'z1', 3, 265.00),
+(10, 'aa1', 1, 190.00), (10, 'aa2', 1, 190.00), (10, 'bb1', 2, 240.00), (10, 'bb2', 2, 240.00),
+(11, 'cc1', 1, 150.00), (11, 'cc2', 1, 150.00), (11, 'dd1', 2, 200.00), (11, 'dd2', 2, 200.00), (11, 'ee1', 3, 250.00),
+(12, 'ff1', 1, 185.00), (12, 'ff2', 1, 185.00), (12, 'gg1', 2, 235.00), (12, 'gg2', 2, 235.00),
+(13, 'hh1', 1, 170.00), (13, 'hh2', 1, 170.00), (13, 'ii1', 2, 220.00), (13, 'ii2', 2, 220.00), (13, 'jj1', 3, 270.00);
+
+-- Inserting data into users table (child - referencing roles and membership_types)
+insert into users (username, password, name, email, phone_number, role_id, membership_type_id) values
+('john.doe', 'password123', 'john doe', 'john.doe@example.com', '123-456-7890', 1, 1),
+('jane.smith', 'securepass', 'jane smith', 'jane.smith@example.com', '987-654-3210', 1, 2),
+('admin123', 'adminpassword', 'admin user', 'admin@example.com', '555-123-4567', 2, 3),
+('peter.jones', 'p@$$wOrd', 'peter jones', 'peter.jones@example.com', '111-222-3333', 1, 1),
+('sarah.lee', 'mypass', 'sarah lee', 'sarah.lee@example.com', '444-555-6666', 1, 2),
+('lisa.brown', 'pass1234', 'lisa brown', 'lisa.brown@example.com', '333-777-9999', 1, 1),
+('david.wilson', 'strongpwd', 'david wilson', 'david.wilson@example.com', '222-888-1111', 1, 3),
+('emma.green', 'emmapass', 'emma green', 'emma.green@example.com', '999-000-1111', 1, 2),
+('sam.miller', 'sam123', 'sam miller', 'sam.miller@example.com', '666-222-8888', 1, 1)
+('zishan', '123456', 'zishan mallick', 'zishan@example.com', '1234567891', 1, 3);
+
+-- Inserting data into bookings table (child - referencing users and showtimes)
+insert into bookings (user_id, showtime_id, booking_time, payment_status_id) values
+(1, 1, '2025-04-11 10:00:00', 1),
+(2, 3, '2025-04-11 11:30:00', 1),
+(1, 5, '2025-04-11 14:00:00', 2),
+(3, 2, '2025-04-11 16:45:00', 1),
+(4, 7, '2025-04-11 18:00:00', 3),
+(2, 9, '2025-04-11 20:15:00', 1),
+(3, 11, '2025-04-11 22:00:00', 1),
+(4, 12, '2025-04-12 08:30:00', 1),
+(5, 13, '2025-04-12 13:15:00', 2),
+(1, 14, '2025-04-12 17:45:00', 1),
+(2, 15, '2025-04-12 19:00:00', 1),
+(3, 16, '2025-04-13 09:30:00', 3),
+(5, 17, '2025-04-13 14:45:00', 1),
+(4, 18, '2025-04-13 18:15:00', 1);
+
+-- Inserting data into payments table (child - referencing bookings and payment_methods)
+insert into payments (booking_id, amount, payment_method_id, transaction_date) values
+(1, 300.00, 2, '2025-04-11 10:05:00'),
+(2, 440.00, 3, '2025-04-11 11:35:00'),
+(4, 160.00, 1, '2025-04-11 16:50:00'),
+(6, 320.00, 4, '2025-04-11 20:20:00'),
+(7, 450.00, 2, '2025-04-11 22:05:00'),
+(8, 280.00, 3, '2025-04-12 08:35:00'),
+(10, 640.00, 1, '2025-04-12 17:50:00'),
+(11, 390.00, 4, '2025-04-12 19:05:00'),
+(13, 510.00, 2, '2025-04-13 14:50:00'),
+(14, 290.00, 3, '2025-04-13 18:20:00');
+
+select * from users;
