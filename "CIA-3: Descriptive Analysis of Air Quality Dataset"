@@ -1,0 +1,132 @@
+---
+title: "CIA-3: Descriptive Analysis of Air Quality Dataset"
+author: "Zishan Mallick 24221055"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+# A. Problem Statement and Objectives
+
+### Problem Area:
+Air pollution is a significant environmental issue. Understanding metrics like ozone concentration and its relationship with temperature, wind, and solar radiation can help in environmental policy and planning.
+
+### Objective:
+To perform a descriptive analysis of the **airquality** dataset using R, identify patterns, and interpret results with social and ethical context.
+
+---
+
+# B. Descriptive Analytics and Insights
+
+```{r setup, include=FALSE}
+# Load required libraries
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center")
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+```
+
+```{r load-data}
+# Load the airquality dataset
+data(airquality)
+
+# Add Month as a factor for better plotting
+airquality <- airquality %>%
+  mutate(Month_Factor = factor(Month, labels = month.abb[5:9]))
+```
+
+## Descriptive Statistics
+
+```{r descriptive-stats}
+# Summary stats for numeric variables
+desc_stats <- airquality %>%
+  summarise(across(where(is.numeric), list(mean = ~round(mean(.x, na.rm = TRUE), 2),
+                                           sd = ~round(sd(.x, na.rm = TRUE), 2))))
+kable(desc_stats, caption = "Descriptive Statistics of Air Quality Variables") %>%
+  kable_styling()
+```
+
+## Histogram of Ozone Levels
+
+```{r plot-ozone-hist}
+# Plot histogram of Ozone levels
+ggplot(airquality, aes(x = Ozone)) +
+  geom_histogram(binwidth = 5, fill = "skyblue", color = "black", na.rm = TRUE) +
+  labs(title = "Distribution of Ozone Levels", x = "Ozone (ppb)", y = "Frequency")
+```
+
+## Scatter Plot: Ozone vs Temperature
+
+```{r plot-ozone-temp}
+# Plot ozone vs temperature
+ggplot(airquality, aes(x = Temp, y = Ozone)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", na.rm = TRUE) +
+  labs(title = "Ozone vs Temperature", x = "Temperature (°F)", y = "Ozone (ppb)")
+```
+
+## Boxplot: Ozone by Month
+
+```{r plot-box-month}
+# Boxplot of Ozone levels by Month
+ggplot(airquality, aes(x = Month_Factor, y = Ozone)) +
+  geom_boxplot(fill = "lightgreen", na.rm = TRUE) +
+  labs(title = "Ozone Levels by Month", x = "Month", y = "Ozone (ppb)")
+```
+
+## Scatter Plot: Ozone vs Wind
+
+```{r plot-ozone-wind}
+# Ozone vs Wind plot
+ggplot(airquality, aes(x = Wind, y = Ozone)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue", na.rm = TRUE) +
+  labs(title = "Ozone vs Wind Speed", x = "Wind Speed (mph)", y = "Ozone (ppb)")
+```
+
+## Correlation Matrix
+
+```{r corr-matrix}
+# Correlation between numeric variables
+cor_matrix <- cor(airquality[, c("Ozone", "Solar.R", "Wind", "Temp")], use = "pairwise.complete.obs")
+kable(round(cor_matrix, 2), caption = "Correlation Matrix of Air Quality Variables") %>%
+  kable_styling()
+```
+
+---
+
+# C. Key Insights
+
+- Ozone increases with temperature and decreases with wind speed.
+- Seasonal variation shows July–August have higher ozone levels.
+- Wind may help disperse ozone and reduce pollution levels.
+
+---
+
+# D. Ethical and Social Considerations
+
+- Urban areas with higher heat and stagnant wind conditions may face increased health risks.
+- Making air quality data public can promote environmental justice and help inform vulnerable communities.
+- Visualizations like these can be used in policy decisions to trigger alerts and mitigation efforts.
+
+---
+
+# E. Conclusion and Recommendations
+
+- Monitor ozone levels during warmer months.
+- Improve green infrastructure to counter heat-induced ozone rise.
+- Promote wind corridor planning to disperse pollution.
+
+---
+
+# Appendix: Wireframe Summary
+
+- **Data**: `airquality`
+- **Tools**: R, ggplot2, dplyr, RMarkdown
+- **Outputs**: Summary stats, plots, interpretation, ethical discussion
