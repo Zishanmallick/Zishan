@@ -1,0 +1,537 @@
+import streamlit as st  # Web UI framework
+import mysql.connector  # Connects to MySQL database
+from datetime import datetime  # For working with dates and times
+import uuid  # For generating unique ticket IDs
+from reportlab.pdfgen import canvas  # Used to generate PDFs
+from reportlab.lib.pagesizes import letter  # Standard PDF page size
+from reportlab.lib.units import inch  # For inch-based positioning in PDF
+from reportlab.lib.utils import ImageReader  # To insert images in PDF
+import qrcode  # To generate QR codes
+import io  # To handle byte streams (used for PDF and images)
+from reportlab.pdfbase import pdfmetrics  # PDF font management
+from reportlab.pdfbase.ttfonts import TTFont  # Support for TrueType fonts
+import os  # To interact with the operating system
+import sys  # To access system-specific parameters
+
+ # Establishes connection to the MySQL database
+def get_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="123456",
+        database="moviebookingsystem"
+    )
+
+# Executes a query (e.g. INSERT, UPDATE, DELETE)
+def execute_query(query, params=None):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        conn.commit()
+        return cursor
+    except Exception as e:
+        st.error(f"Error executing query: {e}")
+        return None
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+# --- Fetches data (e.g. SELECT queries) ---
+def fetch_data(query, params=None):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchall()
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
+        return []
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+# --- Helper Functions ---
+def get_event_name(event_id):
+    query = "SELECT event_name FROM events WHERE event_id = %s"
+    result = fetch_data(query, (event_id,))
+    return result[0][0] if result else "Unknown Event"
+
+def get_theater_name(theater_id):
+    query = "SELECT theater_name FROM theaters WHERE theater_id = %s"
+    result = fetch_data(query, (theater_id,))
+    return result[0][0] if result else "Unknown Theater"
+
+def get_user_name(user_id):
+    query = "SELECT name FROM users WHERE user_id = %s"
+    result = fetch_data(query, (user_id,))
+    return result[0][0] if result else "Unknown User"
+
+def get_payment_status_name(payment_status_id):
+    query = "SELECT payment_status_name FROM payment_statuses WHERE payment_status_id = %s"
+    result = fetch_data(query, (payment_status_id,))
+    return result[0][0] if result else "Unknown Payment Status"
+
+def get_seat_type_name(seat_type_id):
+    query = "SELECT seat_type_name FROM seat_types WHERE seat_type_id = %s"
+    result = fetch_data(query, (seat_type_id,))
+    return result[0][0] if result else "Unknown Seat Type"
+
+def get_event_duration(event_id):
+    query = "SELECT duration FROM events WHERE event_id = %s"
+    result = fetch_data(query, (event_id,))
+    return result[0][0] if result else "Unknown Duration"
+
+def generate_unique_ticket_id():
+    return str(uuid.uuid4())
+
+
+# Generates a PDF ticket details
+def create_pdf_ticket(ticket_id, event_name, theater_name, showtime, user_name, seat_numbers, total_amount, duration):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    font_name = "Helvetica"
+
+    try:
+        c.setFont(font_name, 12)
+    except Exception as e:
+        print(f"Error setting font '{font_name}': {e}. Using Helvetica.")
+        c.setFont("Helvetica", 12)  # Fallback
+
+    # Title
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(width / 2, height - 1 * inch, "Event Ticket")
+    c.setFont(font_name, 12)
+
+    # Ticket ID
+    c.drawString(1 * inch, height - 2 * inch, f"Ticket ID: {ticket_id}")
+
+    # Event Details
+    c.drawString(1 * inch, height - 3 * inch, f"Event: {event_name}")
+    c.drawString(1 * inch, height - 4 * inch, f"Theater: {theater_name}")
+    c.drawString(1 * inch, height - 5 * inch, f"Showtime: {showtime.strftime('%Y-%m-%d %H:%M:%S')}")
+    c.drawString(1 * inch, height - 6 * inch, f"Duration: {duration} minutes")
+    c.drawString(1 * inch, height - 7 * inch, f"User: {user_name}")
+    c.drawString(1 * inch, height - 8 * inch, f"Seats: {', '.join(seat_numbers)}")
+    c.drawString(1 * inch, height - 9 * inch, f"Total: Rs.{total_amount:.2f}")
+
+    # QR Code
+    qr_data = f"Ticket ID: {ticket_id}, Event: {event_name}, Theater: {theater_name}, Showtime: {showtime.strftime('%Y-%m-%d %H:%M:%S')}, Duration: {duration} minutes , User: {user_name}, Seats: {', '.join(seat_numbers)}, Total: {total_amount:.2f}"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, format='PNG')
+    img_bytes.seek(0)
+    img_reader = ImageReader(img_bytes)
+
+    c.drawImage(img_reader, 4 * inch, 2 * inch, 3 * inch, 3 * inch)
+
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+ # Creates necessary tables if they don't already exist
+def create_tables():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        print("Creating tables...")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS event_types (
+                event_type_id INT AUTO_INCREMENT PRIMARY KEY,
+                event_type_name VARCHAR(255) NOT NULL UNIQUE
+            )
+        """)
+        print("Created event_types table...")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                phone_number VARCHAR(20),
+                role_id INT NOT NULL,
+                membership_type_id INT,
+                FOREIGN KEY (membership_type_id) REFERENCES membership_types(membership_type_id)
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS membership_types (
+                membership_type_id INT AUTO_INCREMENT PRIMARY KEY,
+                membership_type_name VARCHAR(255) NOT NULL
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS payment_statuses (
+                payment_status_id INT AUTO_INCREMENT PRIMARY KEY,
+                payment_status_name VARCHAR(255) NOT NULL
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                event_id INT AUTO_INCREMENT PRIMARY KEY,
+                event_name VARCHAR(255) NOT NULL,
+                event_type_id INT,
+                genre VARCHAR(255),
+                director VARCHAR(255),
+                duration INT,
+                language VARCHAR(255),
+                release_date DATE,
+                performer VARCHAR(255),
+                FOREIGN KEY (event_type_id) REFERENCES event_types(event_type_id)
+            )
+        """)
+        print("Created events table...")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS theaters (
+                theater_id INT AUTO_INCREMENT PRIMARY KEY,
+                theater_name VARCHAR(255) NOT NULL
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS showtimes (
+                showtime_id INT AUTO_INCREMENT PRIMARY KEY,
+                theater_id INT,
+                event_id INT,
+                showtime DATETIME NOT NULL,
+                FOREIGN KEY (theater_id) REFERENCES theaters(theater_id),
+                FOREIGN KEY (event_id) REFERENCES events(event_id)
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS seats (
+                seat_id INT AUTO_INCREMENT PRIMARY KEY,
+                theater_id INT,
+                seat_number VARCHAR(10) NOT NULL,
+                seat_type_id INT,
+                price DECIMAL(10,2) NOT NULL,
+                FOREIGN KEY (theater_id) REFERENCES theaters(theater_id),
+                FOREIGN KEY (seat_type_id) REFERENCES seat_types(seat_type_id)
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS seat_types (
+                seat_type_id INT AUTO_INCREMENT PRIMARY KEY,
+                seat_type_name VARCHAR(255) NOT NULL
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS booked_seats (
+                booked_seat_id INT AUTO_INCREMENT PRIMARY KEY,
+                booking_id INT,
+                seat_id INT,
+                FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
+                FOREIGN KEY (seat_id) REFERENCES seats(seat_id)
+            )
+        """)
+        print("Created booked_seats table")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bookings (
+                booking_id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT,
+                showtime_id INT,
+                booking_time DATETIME NOT NULL,
+                payment_status_id INT,
+                FOREIGN KEY (user_id) REFERENCES users(user_id),
+                FOREIGN KEY (showtime_id) REFERENCES showtimes(showtime_id),
+                FOREIGN KEY (payment_status_id) REFERENCES payment_statuses(payment_status_id)
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS payments (
+                payment_id INT AUTO_INCREMENT PRIMARY KEY,
+                booking_id INT,
+                amount DECIMAL(10,2) NOT NULL,
+                payment_method_id INT,
+                transaction_date DATETIME NOT NULL,
+                FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
+            )
+        """)
+
+        conn.commit()
+        print("Tables created successfully!")
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+# --- Streamlit UI - # Handles login logic for admin and user ---
+def login():
+    st.title("Event Booking System - Login")
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        # Check admin login
+        admin_query = "SELECT * FROM users WHERE username = %s AND password = %s AND role_id = 2"
+        admin_result = fetch_data(admin_query, (username, password))
+        if admin_result:
+            st.session_state['logged_in'] = True
+            st.session_state['user_id'] = admin_result[0][0]
+            st.session_state['username'] = admin_result[0][1]
+            st.session_state['role'] = 'admin'
+            st.success(f"Admin '{username}' logged in successfully!")
+            st.rerun()
+            return
+
+        # Check user login
+        user_query = "SELECT * FROM users WHERE username = %s AND password = %s AND role_id = 1"
+        user_result = fetch_data(user_query, (username, password))
+        if user_result:
+            st.session_state['logged_in'] = True
+            st.session_state['user_id'] = user_result[0][0]
+            st.session_state['username'] = user_result[0][1]
+            st.session_state['role'] = 'user'
+            st.success(f"User '{username}' logged in successfully!")
+            st.rerun()
+            return
+
+        st.error("Invalid username or password.")
+
+# Admin can view/add event types and events
+def admin_page():
+    st.title("Admin Dashboard")
+    st.subheader("Manage Event Types")
+
+    event_types = fetch_data("SELECT * FROM event_types")
+    if event_types:
+        st.write("Available Event Types:")
+        for event_type in event_types:
+            st.write(f"- {event_type[1]}")
+    else:
+        st.info("No event types found.")
+
+    st.subheader("Add New Event Type")
+    new_event_type = st.text_input("Enter new event type:")
+    if st.button("Add Event Type"):
+        if new_event_type:
+            check_query = "SELECT * FROM event_types WHERE event_type_name = %s"
+            if not fetch_data(check_query, (new_event_type,)):
+                insert_query = "INSERT INTO event_types (event_type_name) VALUES (%s)"
+                if execute_query(insert_query, (new_event_type,)):
+                    st.success(f"Event type '{new_event_type}' added successfully!")
+                else:
+                    st.error("Failed to add event type.")
+            else:
+                st.warning(f"Event type '{new_event_type}' already exists.")
+        else:
+            st.warning("Please enter an event type.")
+
+    st.subheader("Manage Events")
+    events = fetch_data("SELECT * FROM events")
+    if events:
+        st.write("Available Events:")
+        for event in events:
+            event_type_name = fetch_data("SELECT event_type_name from event_types WHERE event_type_id = %s", (event[2],))[0][0]
+            st.write(f"- Event ID: {event[0]}, Name: {event[1]}, Type: {event_type_name}, Genre: {event[3]}, Director: {event[4]}, Duration: {event[5]}, Language: {event[6]}, Release Date: {event[7]}, Performer: {event[8]}")
+    else:
+        st.info("No events found.")
+
+    st.subheader("Add New Event")
+    event_name = st.text_input("Event Name")
+    event_type_id = st.selectbox("Event Type", fetch_data("SELECT event_type_id, event_type_name FROM event_types"))[0]
+    genre = st.text_input("Genre")
+    director = st.text_input("Director")
+    duration = st.number_input("Duration (minutes)", min_value=0, value=0)
+    language = st.text_input("Language")
+    release_date = st.date_input("Release Date")
+    performer = st.text_input("Performer")
+    if st.button("Add Event"):
+        if event_name and event_type_id:
+            insert_query = "INSERT INTO events (event_name, event_type_id, genre, director, duration, language, release_date, performer) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            params = (event_name, event_type_id, genre, director, duration, language, release_date, performer)
+            if execute_query(insert_query, params):
+                st.success(f"Event '{event_name}' added successfully!")
+            else:
+                st.error("Failed to add event.")
+        else:
+            st.warning("Please enter event name and type.")
+
+def user_page():
+    st.title("User Dashboard")
+    st.subheader("Browse Event Types")
+
+    event_types = fetch_data("SELECT * FROM event_types")
+    if event_types:
+        event_type_names = [et[1] for et in event_types]
+        selected_event_type_name = st.selectbox("Select Event Type", event_type_names, key="event_type_selectbox")
+
+        selected_event_type_id = 0
+        for et in event_types:
+            if et[1] == selected_event_type_name:
+                selected_event_type_id = et[0]
+                break
+
+        events = fetch_data("SELECT * FROM events WHERE event_type_id = %s", (selected_event_type_id,))
+
+        if events:
+            event_names = [event[1] for event in events]
+            selected_event_name = st.selectbox("Select Event", event_names, key="event_selectbox")
+
+            selected_event_id = 0
+            for event in events:
+                if event[1] == selected_event_name:
+                    selected_event_id = event[0]
+                    break
+
+            showtimes = fetch_data(
+                "SELECT st.showtime_id, st.showtime, t.theater_name, t.theater_id FROM showtimes st JOIN theaters t ON st.theater_id = t.theater_id WHERE st.event_id = %s",
+                (selected_event_id,))
+            if showtimes:
+                showtime_options = [f"{st[1]} - {st[2]}" for st in showtimes]
+                selected_showtime_option = st.selectbox("Select Showtime", showtime_options, key="showtime_selectbox")
+
+                user_id = st.session_state['user_id']
+
+                selected_showtime_id = None
+                selected_theater_id = None
+                for showtime in showtimes:
+                    if f"{showtime[1]} - {showtime[2]}" == selected_showtime_option:
+                        selected_showtime_id = showtime[0]
+                        selected_theater_id = showtime[3]
+                        break
+
+                seats_query = "SELECT seat_id, seat_number, price FROM seats WHERE theater_id = %s"
+                available_seats = fetch_data(seats_query, (selected_theater_id,))
+
+                if available_seats:
+                    seat_options = [f"{seat[1]} - \u20B9{seat[2]}" for seat in available_seats]
+                    selected_seat_options = st.multiselect("Select Seats", seat_options, key="seat_selection")
+
+                    if st.button("Book Seats"):
+                        if not selected_seat_options:
+                            st.warning("Please select at least one seat.")
+                        else:
+                            selected_seat_ids = []
+                            total_price = 0
+                            selected_seats = []
+                            for seat_option in selected_seat_options:
+                                seat_number = seat_option.split(" - ")[0]
+                                for seat in available_seats:
+                                    if seat[1] == seat_number:
+                                        selected_seat_ids.append(seat[0])
+                                        total_price += seat[2]
+                                        selected_seats.append(seat[1])
+                                        break
+
+                            booking_time = datetime.now()
+                            payment_status_id = 1
+
+                            insert_booking_query = "INSERT INTO bookings (user_id, showtime_id, booking_time, payment_status_id) VALUES (%s, %s, %s, %s)"
+                            params = (user_id, selected_showtime_id, booking_time, payment_status_id)
+
+                            booking_cursor = execute_query(insert_booking_query, params)
+
+                            if booking_cursor:
+                                booking_id = booking_cursor.lastrowid
+
+                                for seat_id in selected_seat_ids:
+                                    insert_booked_seat_query = "INSERT INTO booked_seats (booking_id, seat_id) VALUES (%s, %s)"
+                                    booked_seat_params = (booking_id, seat_id)
+                                    execute_query(insert_booked_seat_query, booked_seat_params)
+
+                                event_name = get_event_name(selected_event_id)
+                                theater_name = get_theater_name(selected_theater_id)
+                                showtime_data = fetch_data("SELECT showtime from showtimes where showtime_id = %s",
+                                                            (selected_showtime_id,))
+                                showtime = showtime_data[0][0]
+                                user_name = get_user_name(user_id)
+                                duration = get_event_duration(selected_event_id)
+                                pdf_buffer = create_pdf_ticket(generate_unique_ticket_id(), event_name, theater_name,
+                                                                showtime, user_name, selected_seats, total_price, duration)
+                                st.success(
+                                    f"Seats {', '.join(selected_seats)} booked successfully!  Here is your ticket:")
+                                st.download_button(
+                                    label="Download Ticket",
+                                    data=pdf_buffer,
+                                    file_name="ticket.pdf",
+                                    mime="application/pdf",
+                                )
+                            else:
+                                st.error("Failed to book seats.")
+                else:
+                    st.write("No seats available for this theater.")
+            else:
+                st.write("No showtimes found for this event.")
+        else:
+            st.write("No events found for this event type.")
+    else:
+        st.info("No event types available.")
+
+    st.subheader("Your Booking History")
+    user_id = st.session_state.get('user_id')
+    if user_id:
+        query = "SELECT b.booking_id, s.showtime, e.event_name, t.theater_name, ps.payment_status_name " \
+                "FROM bookings b " \
+                "JOIN showtimes s ON b.showtime_id = s.showtime_id " \
+                "JOIN events e ON s.event_id = e.event_id " \
+                "JOIN theaters t ON s.theater_id = t.theater_id " \
+                "JOIN payment_statuses ps ON b.payment_status_id = ps.payment_status_id " \
+                "WHERE b.user_id = %s"
+        bookings = fetch_data(query, (user_id,))
+        if bookings:
+            st.write("Your Bookings:")
+            for booking in bookings:
+                st.write(
+                    f"- Booking ID: {booking[0]}, Event: {booking[2]}, Theater: {booking[3]}, Showtime: {booking[1]}, Status: {booking[4]}")
+        else:
+            st.info("No bookings found for your account.")
+    else:
+        st.error("User ID not found in session.")
+
+def main():
+    create_tables()
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
+        st.session_state['user_id'] = None
+        st.session_state['role'] = None
+        st.session_state['username'] = None
+
+    if not st.session_state['logged_in']:
+        login()
+    else:
+        if st.session_state['role'] == 'admin':
+            admin_page()
+        elif st.session_state['role'] == 'user':
+            st.write(f"Welcome, {st.session_state['username']}!")
+            user_page()
+
+        if st.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.session_state['user_id'] = None
+            st.session_state['role'] = None
+            st.session_state['username'] = None
+            st.success("Logged out successfully!")
+            st.rerun()
+
+if __name__ == "__main__":
+    main()
