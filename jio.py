@@ -22,6 +22,9 @@ if "intern_data" not in st.session_state:
         {"Name": "Abuzar Tamannai", "Department": "Marketing", "LinkedIn": "https://linkedin.com/in/abuzar-tamannai-44b503257"},
         {"Name": "Trapti Singh", "Department": "Finance", "LinkedIn": "https://linkedin.com/in/trapti-singh16"},
         {"Name": "Ujjwal Akshith Mondreti", "Department": "Machine Learning", "LinkedIn": "https://linkedin.com/in/ujjwal-akshith-m"},
+        {"Name": "satvik Ahlawat", "Department": "Data Science", "LinkedIn": "https://linkedin.com/in/satvikahlawat/"},
+        {"Name": "Rohit Mishra", "Department": "Data Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra-a6689031b"},
+
     ]
 
 # -------------------- LOGIN --------------------
