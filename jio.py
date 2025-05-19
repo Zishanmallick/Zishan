@@ -172,7 +172,7 @@ if st.session_state.logged_in:
             st.success(f"✅ {new_name} added to intern list.")
 
     st.divider()
-    st.markdown("© 2025 Reliance Jio Internship | For academic use only.")
+    st.markdown("© 2025 Reliance Jio Internship | For academic use only.") 
 
 else:
     st.info("👈 Please log in using your name and access code in the sidebar.")
