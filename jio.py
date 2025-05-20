@@ -1,13 +1,27 @@
 import streamlit as st
 import pandas as pd
 import os
-import datetime
+from PIL import Image  # Import the Pillow library
 
 # -------------------------------
 # PAGE CONFIGURATION
 # -------------------------------
 st.set_page_config(page_title="Reliance Intern + Policy Issue Tracker", layout="wide")
-st.title("Reliance Intern & Policy Issue Portal")
+
+# Add the Reliance logo
+# Ensure the path is correct for your system
+logo_path = r"C:\Users\malli\Downloads\L.1.jpg"
+try:
+    reliance_logo = Image.open(logo_path)
+    # Use columns for better layout
+    col1, col2 = st.columns([1, 4])  # Adjust column ratios as needed
+    with col1:
+        st.image(reliance_logo, width=150)  # Adjust width as needed
+    with col2:
+        st.title("Reliance Intern & Policy Issue Portal")
+except FileNotFoundError:
+    st.error(f"Error: Logo file not found at {logo_path}. Please check the path.")
+    st.title("Reliance Intern & Policy Issue Portal")  # Show title even if logo is missing
 
 # -------------------------------
 # SESSION SETUP
@@ -16,7 +30,7 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
-if "is_admin" not in st.session_state:
+if "is_admin" not in st.session_state:  # Corrected syntax error here
     st.session_state.is_admin = False
 if "chat" not in st.session_state:
     st.session_state.chat = []
