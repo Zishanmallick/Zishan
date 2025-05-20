@@ -8,20 +8,6 @@ from PIL import Image  # Import the Pillow library
 # -------------------------------
 st.set_page_config(page_title="Reliance Intern + Policy Issue Tracker", layout="wide")
 
-# Add the Reliance logo
-# Ensure the path is correct for your system
-logo_path = r"https://github.com/Zishanmallick/Zishan/blob/main/L.1.jpg"
-try:
-    reliance_logo = Image.open(logo_path)
-    # Use columns for better layout
-    col1, col2 = st.columns([1, 4])  # Adjust column ratios as needed
-    with col1:
-        st.image(reliance_logo, width=150)  # Adjust width as needed
-    with col2:
-        st.title("Reliance Intern & Policy Issue Portal")
-except FileNotFoundError:
-    st.error(f"Error: Logo file not found at {logo_path}. Please check the path.")
-    st.title("Reliance Intern & Policy Issue Portal")  # Show title even if logo is missing
 
 # -------------------------------
 # SESSION SETUP
@@ -43,6 +29,31 @@ if "intern_data" not in st.session_state:
         {"Name": "Satvik Ahlawat", "Department": "Data Science", "LinkedIn": "https://linkedin.com/in/satvikahlawat/"},
         {"Name": "Rohit Mishra", "Department": "Data Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra-a6689031b"},
     ]
+
+
+
+# -------------------------------
+# RELATIVE PATH FOR LOGO
+# -------------------------------
+image_dir = "images"  # Directory name (relative to jio.py)
+image_file = "L.1.jpg"  # File name (Make sure this is the correct file name)
+logo_path = os.path.join(image_dir, image_file)  # Construct the full relative path
+
+
+# Add the Reliance logo
+try:
+    reliance_logo = Image.open(logo_path)
+    # Use columns for better layout
+    col1, col2 = st.columns([1, 4])  # Adjust column ratios as needed
+    with col1:
+        st.image(reliance_logo, width=150)  # Adjust width as needed
+    with col2:
+        st.title("Reliance Intern & Policy Issue Portal")
+except FileNotFoundError:
+    st.error(f"Error: Logo file not found at {logo_path}. Please check the path.")
+    st.title("Reliance Intern & Policy Issue Portal")  # Show title even if logo is missing
+
+
 
 # -------------------------------
 # LOGIN SIDEBAR
