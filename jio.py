@@ -39,7 +39,7 @@ logo_url = os.path.basename("L.1.jpg")
 try:
     response = requests.get(logo_url)
     response.raise_for_status()
-    reliance_logo = Image.open(BytesIO(response.content))
+    reliance_logo = Image.open(logo_url)
 
     col1, col2 = st.columns([1, 4])
     with col1:
