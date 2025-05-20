@@ -215,11 +215,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 df.to_csv("issues.csv", index=False)
                 st.success("Issue updated and saved")
 
-        st.download_button("Export Internal Tracker", data=df.to_csv(index=False), file_name="issues.csv")
-        st.divider()
-        st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick| For academic use only.")
-        st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
-        st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
+
 
         st.subheader("Intern Blog Board")
         if os.path.exists("blog_posts.csv"):
