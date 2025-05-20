@@ -24,7 +24,7 @@ if "chat" not in st.session_state:
 if "intern_data" not in st.session_state:
     st.session_state.intern_data = [
         {"Name": "Zishan Mallick", "Department": "Business Analytics", "LinkedIn": "https://linkedin.com/in/zishan-mallick-5809a6181"},
-        {"Name": "Abuzar Tamannai", "Department": "Marketing", "LinkedIn": "https://linkedin.com/in/abuzar-tamannai-44b503257"},
+        {"Name": "Aanchal Verma", "Department": "Finance", "LinkedIn": "https://linkedin.com/in/aanchal-verma-084076325"},
         {"Name": "Trapti Singh", "Department": "Finance", "LinkedIn": "https://linkedin.com/in/trapti-singh16"},
         {"Name": "Ujjwal Akshith Mondreti", "Department": "Machine Learning", "LinkedIn": "https://linkedin.com/in/ujjwal-akshith-m"},
         {"Name": "Satvik Ahlawat", "Department": "Data Science", "LinkedIn": "https://linkedin.com/in/satvikahlawat/"},
