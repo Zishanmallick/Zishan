@@ -34,16 +34,16 @@ if "intern_data" not in st.session_state:
 # -------------------------------
 # LOAD LOGO FROM GITHUB
 # -------------------------------
-logo_url = os.path.basename("L.1.jpg")
+logo_url = "L.1.jpg"
 
 try:
-    response = requests.get(logo_url)
-    response.raise_for_status()
+    #response = requests.get(logo_url)
+    #response.raise_for_status()
     reliance_logo = Image.open(logo_url)
 
     col1, col2 = st.columns([1, 4])
     with col1:
-        st.image(reliance_logo, width=150)
+        st.image(logo_url, width=150)
     with col2:
         st.title("Reliance Intern & Policy Issue Portal")
 except Exception as e:
