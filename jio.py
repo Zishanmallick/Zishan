@@ -80,8 +80,8 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # 📋 Weekly Tasks
-    st.subheader(Weekly Tasks")
+    # Weekly Tasks
+    st.subheader("Weekly Tasks")
     tasks = {
         "Week 1": "Intro to Jio Platforms + Submit project preference form",
         "Week 2": "Research Jio's AI Strategy and write 500-word report",
@@ -92,7 +92,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # 📚 PDFs
+    # PDFs
     st.subheader("Reading Materials")
     pdfs = {
         "Week 1 – Jio Overview": "materials/JioBrain.pdf",
@@ -109,7 +109,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    #Intern Profiles
+    # Intern Profiles
     st.subheader("Intern Profiles")
     for intern in st.session_state.intern_data:
         st.subheader(intern["Name"])
@@ -119,7 +119,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    #Blog Board (Visible to Interns)
+    # Blog Board (Visible to Interns)
     st.subheader("Intern Blog Board")
     if os.path.exists("blog_posts.csv"):
         blog_df = pd.read_csv("blog_posts.csv")
@@ -132,7 +132,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # 📤 Upload Task (Save only)
+    # Upload Task (Save only)
     st.subheader("Submit Task")
     with st.form("upload_form"):
         week = st.selectbox("Select Week", list(tasks.keys()))
@@ -146,7 +146,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    #Chat Box
+    # Chat Box
     st.subheader("Intern Chat")
     chat_msg = st.text_input("Message:")
     if st.button("Send") and chat_msg:
@@ -158,9 +158,9 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 # POLICY + ADMIN/CHAIRMAN DASHBOARD
 # -------------------------------
 elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman"]:
-    st.header("📊 Policy Issues Tracker")
+    st.header("Policy Issues Tracker")
 
-    #Google Form Submissions (Live CSV)
+    # Google Form Submissions (Live CSV)
     csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
     try:
         df_live = pd.read_csv(csv_url)
@@ -170,7 +170,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
     except Exception as e:
         st.error(f"Google Form data failed to load: {e}")
 
-    #Admin Tracker Section
+    # Admin Tracker Section
     if st.session_state.user_name in ["Admin", "Chairman"]:
         st.subheader("Internal Tracker & Review")
 
@@ -209,13 +209,13 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 df.to_csv("issues.csv", index=False)
                 st.success("Issue updated and saved")
 
-        st.download_button("📥 Export Internal Tracker", data=df.to_csv(index=False), file_name="issues.csv")
+        st.download_button("Export Internal Tracker", data=df.to_csv(index=False), file_name="issues.csv")
         st.divider()
         st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick| For academic use only.")
         st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
         st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
 
-        #Blog Board (Admin Only - Add/Delete Functionality)
+        # Blog Board (Admin Only - Add/Delete Functionality)
         st.subheader("Intern Blog Board")
         if os.path.exists("blog_posts.csv"):
             blog_df = pd.read_csv("blog_posts.csv")
@@ -243,7 +243,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                     entry.to_csv("blog_posts.csv", index=False)
                 st.success("Blog posted!")
 
-            st.subheader("➕ Add New Intern")
+            st.subheader("Add New Intern")
             new_name = st.text_input("Intern Name")
             new_dept = st.text_input("Department")
             new_linkedin = st.text_input("LinkedIn URL")
@@ -265,6 +265,6 @@ else:
 # -------------------------------
 
 st.divider()
-st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick | For academic use only.")
+st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick| For academic use only.")
 st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
 st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
