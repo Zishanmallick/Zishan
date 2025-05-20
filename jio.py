@@ -10,7 +10,7 @@ st.set_page_config(page_title="Reliance Intern + Policy Issue Tracker", layout="
 
 # Add the Reliance logo
 # Ensure the path is correct for your system
-logo_path = r"C:\Users\malli\Downloads\L.1.jpg"
+logo_path = r"https://github.com/Zishanmallick/Zishan/blob/main/L.1.jpg"
 try:
     reliance_logo = Image.open(logo_path)
     # Use columns for better layout
