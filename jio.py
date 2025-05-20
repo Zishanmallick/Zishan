@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
 import os
-from PIL import Image  # Import the Pillow library
-import requests # Import the requests library
+from PIL import Image
+import requests
+from io import BytesIO  # Required to open image from bytes
 
 # -------------------------------
 # PAGE CONFIGURATION
 # -------------------------------
 st.set_page_config(page_title="Reliance Intern + Policy Issue Tracker", layout="wide")
-
 
 # -------------------------------
 # SESSION SETUP
@@ -17,7 +17,7 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
-if "is_admin" not in st.session_state:  # Corrected syntax error here
+if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
 if "chat" not in st.session_state:
     st.session_state.chat = []
@@ -32,26 +32,22 @@ if "intern_data" not in st.session_state:
     ]
 
 # -------------------------------
-# LOAD LOGO FROM GITHUB URL
+# LOAD LOGO FROM GITHUB
 # -------------------------------
-logo_url = "https://github.com/Zishanmallick/Zishan/blob/main/L.1.jpg"  # Raw URL to your logo
+logo_url = "https://raw.githubusercontent.com/Zishanmallick/Zishan/main/L.1.jpg"
 
 try:
-    # Get the image data from the URL
     response = requests.get(logo_url)
-    response.raise_for_status()  # Raise an exception for bad status codes
+    response.raise_for_status()
+    reliance_logo = Image.open(BytesIO(response.content))
 
-    # Open the image using Pillow
-    reliance_logo = Image.open(BytesIO(response.content)) # Use BytesIO
-
-    # Use columns for better layout
     col1, col2 = st.columns([1, 4])
     with col1:
         st.image(reliance_logo, width=150)
     with col2:
         st.title("Reliance Intern & Policy Issue Portal")
 except Exception as e:
-    st.error(f"Error: Failed to load logo from {logo_url}.  Error: {e}")
+    st.error(f"Error loading logo: {e}")
     st.title("Reliance Intern & Policy Issue Portal")
 
 # -------------------------------
@@ -88,11 +84,9 @@ if st.sidebar.button("Login"):
 # -------------------------------
 if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "Chairman", "Policy"]:
     st.header("Your Dashboard – Weekly Tasks & Submissions")
-
     st.markdown(f"Welcome, **{st.session_state.user_name}**! Here are your tasks and ways to connect.")
     st.divider()
 
-    # Announcements
     st.subheader("Announcements")
     announcements = [
         "Intern Townhall on **May 25 at 4:00 PM**.",
@@ -104,7 +98,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # Weekly Tasks
     st.subheader("Weekly Tasks")
     tasks = {
         "Week 1": "Intro to Jio Platforms + Submit project preference form",
@@ -116,7 +109,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # PDFs
     st.subheader("Reading Materials")
     pdfs = {
         "Week 1 – Jio Overview": "materials/JioBrain.pdf",
@@ -133,7 +125,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # Intern Profiles
     st.subheader("Intern Profiles")
     for intern in st.session_state.intern_data:
         st.subheader(intern["Name"])
@@ -143,7 +134,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # Blog Board (Visible to Interns)
     st.subheader("Intern Blog Board")
     if os.path.exists("blog_posts.csv"):
         blog_df = pd.read_csv("blog_posts.csv")
@@ -156,7 +146,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # Upload Task (Save only)
     st.subheader("Submit Task")
     with st.form("upload_form"):
         week = st.selectbox("Select Week", list(tasks.keys()))
@@ -170,7 +159,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     st.divider()
 
-    # Chat Box
     st.subheader("Intern Chat")
     chat_msg = st.text_input("Message:")
     if st.button("Send") and chat_msg:
@@ -184,7 +172,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman"]:
     st.header("Policy Issues Tracker")
 
-    # Google Form Submissions (Live CSV)
     csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
     try:
         df_live = pd.read_csv(csv_url)
@@ -194,7 +181,6 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
     except Exception as e:
         st.error(f"Google Form data failed to load: {e}")
 
-    # Admin Tracker Section
     if st.session_state.user_name in ["Admin", "Chairman"]:
         st.subheader("Internal Tracker & Review")
 
@@ -239,7 +225,6 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
         st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
         st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
 
-        # Blog Board (Admin Only - Add/Delete Functionality)
         st.subheader("Intern Blog Board")
         if os.path.exists("blog_posts.csv"):
             blog_df = pd.read_csv("blog_posts.csv")
@@ -286,7 +271,6 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
 # -------------------------------
 else:
     st.info("Please log in using your name and access code in the sidebar.")
-# -------------------------------
 
 st.divider()
 st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick| For academic use only.")
