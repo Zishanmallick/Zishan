@@ -7,7 +7,7 @@ import datetime
 # PAGE CONFIGURATION
 # -------------------------------
 st.set_page_config(page_title="Reliance Intern + Policy Issue Tracker", layout="wide")
-st.title("🚀 Reliance Intern & Policy Issue Portal")
+st.title("Reliance Intern & Policy Issue Portal")
 
 # -------------------------------
 # SESSION SETUP
@@ -33,7 +33,7 @@ if "intern_data" not in st.session_state:
 # -------------------------------
 # LOGIN SIDEBAR
 # -------------------------------
-st.sidebar.title("🔐 Login")
+st.sidebar.title("Login")
 all_names = ["Admin", "Chairman", "Policy"] + [intern["Name"] for intern in st.session_state.intern_data]
 selected_user = st.sidebar.selectbox("Select Your Name", all_names)
 entered_password = st.sidebar.text_input("Enter Access Code", type="password")
@@ -43,7 +43,7 @@ if st.sidebar.button("Login"):
         st.session_state.logged_in = True
         st.session_state.user_name = "Admin"
         st.session_state.is_admin = True
-        st.success("Welcome, Admin! 🔐")
+        st.success("Welcome, Admin!")
     elif selected_user == "Chairman" and entered_password == "chairman@jio":
         st.session_state.logged_in = True
         st.session_state.user_name = "Chairman"
@@ -63,17 +63,17 @@ if st.sidebar.button("Login"):
 # INTERN DASHBOARD
 # -------------------------------
 if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "Chairman", "Policy"]:
-    st.header("🎯 Your Dashboard – Weekly Tasks & Submissions")
+    st.header("Your Dashboard – Weekly Tasks & Submissions")
 
     st.markdown(f"Welcome, **{st.session_state.user_name}**! Here are your tasks and ways to connect.")
     st.divider()
 
-    # 📢 Announcements
-    st.subheader("📢 Announcements")
+    # Announcements
+    st.subheader("Announcements")
     announcements = [
-        "📣 Intern Townhall on **May 25 at 4:00 PM**.",
-        "📝 Task 2 deadline: **May 24, 11:59 PM**.",
-        "🎖️ Intern of the Week: **Zishan Mallick!**"
+        "Intern Townhall on **May 25 at 4:00 PM**.",
+        "Task 2 deadline: **May 24, 11:59 PM**.",
+        "Intern of the Week: **Zishan Mallick!**"
     ]
     for note in announcements:
         st.info(note)
@@ -81,7 +81,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
     st.divider()
 
     # 📋 Weekly Tasks
-    st.subheader("📋 Weekly Tasks")
+    st.subheader(Weekly Tasks")
     tasks = {
         "Week 1": "Intro to Jio Platforms + Submit project preference form",
         "Week 2": "Research Jio's AI Strategy and write 500-word report",
@@ -93,7 +93,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
     st.divider()
 
     # 📚 PDFs
-    st.subheader("📚 Reading Materials")
+    st.subheader("Reading Materials")
     pdfs = {
         "Week 1 – Jio Overview": "materials/JioBrain.pdf",
         "Week 2 – AI Strategy": "materials/Digital Transformation PPT for DFS Meeting_Sept2024.pdf",
@@ -103,24 +103,24 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
         st.subheader(title)
         try:
             with open(path, "rb") as f:
-                st.download_button("📄 Download", f, file_name=os.path.basename(path))
+                st.download_button("Download", f, file_name=os.path.basename(path))
         except FileNotFoundError:
             st.warning(f"Missing file: {os.path.basename(path)}")
 
     st.divider()
 
-    # 👩‍💻 Intern Profiles
-    st.subheader("👩‍💻 Intern Profiles")
+    #Intern Profiles
+    st.subheader("Intern Profiles")
     for intern in st.session_state.intern_data:
         st.subheader(intern["Name"])
         st.write(f"**Department:** {intern['Department']}")
-        st.markdown(f"[🔗 LinkedIn]({intern['LinkedIn']})", unsafe_allow_html=True)
+        st.markdown(f"[LinkedIn]({intern['LinkedIn']})", unsafe_allow_html=True)
         st.markdown("---")
 
     st.divider()
 
-    # 📰 Blog Board (Visible to Interns)
-    st.subheader("📰 Intern Blog Board")
+    #Blog Board (Visible to Interns)
+    st.subheader("Intern Blog Board")
     if os.path.exists("blog_posts.csv"):
         blog_df = pd.read_csv("blog_posts.csv")
         for _, row in blog_df.iterrows():
@@ -133,7 +133,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
     st.divider()
 
     # 📤 Upload Task (Save only)
-    st.subheader("📤 Submit Task")
+    st.subheader("Submit Task")
     with st.form("upload_form"):
         week = st.selectbox("Select Week", list(tasks.keys()))
         file = st.file_uploader("Upload PDF/DOC", type=["pdf", "docx"])
@@ -142,12 +142,12 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
             path = f"uploads/{st.session_state.user_name.replace(' ', '_')}_{week}_{file.name}"
             with open(path, "wb") as f:
                 f.write(file.read())
-            st.success("✅ Uploaded and saved successfully!")
+            st.success("Uploaded and saved successfully!")
 
     st.divider()
 
-    # 💬 Chat Box
-    st.subheader("💬 Intern Chat")
+    #Chat Box
+    st.subheader("Intern Chat")
     chat_msg = st.text_input("Message:")
     if st.button("Send") and chat_msg:
         st.session_state.chat.append(f"{st.session_state.user_name}: {chat_msg}")
@@ -160,19 +160,19 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman"]:
     st.header("📊 Policy Issues Tracker")
 
-    # ✅ Google Form Submissions (Live CSV)
+    #Google Form Submissions (Live CSV)
     csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
     try:
         df_live = pd.read_csv(csv_url)
-        st.success("✅ Google Form data loaded successfully!")
-        st.subheader("📄 Public Submissions (from Google Form)")
+        st.success("Google Form data loaded successfully!")
+        st.subheader("Public Submissions (from Google Form)")
         st.dataframe(df_live, use_container_width=True)
     except Exception as e:
-        st.error(f"⚠️ Google Form data failed to load: {e}")
+        st.error(f"Google Form data failed to load: {e}")
 
-    # ✅ Admin Tracker Section
+    #Admin Tracker Section
     if st.session_state.user_name in ["Admin", "Chairman"]:
-        st.subheader("🛠️ Internal Tracker & Review")
+        st.subheader("Internal Tracker & Review")
 
         if os.path.exists("issues.csv"):
             df = pd.read_csv("issues.csv")
@@ -197,7 +197,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
 
         st.dataframe(filtered, use_container_width=True)
 
-        st.subheader("✏️ Update Issue")
+        st.subheader("Update Issue")
         if not df.empty:
             selected_issue = st.selectbox("Select Issue", df["Issue Title"].tolist())
             status = st.selectbox("Update Status", ["New", "In Review", "Actioned", "Needs Clarification"])
@@ -207,7 +207,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 df.at[idx, "Status"] = status
                 df.at[idx, "Response"] = response
                 df.to_csv("issues.csv", index=False)
-                st.success("✅ Issue updated and saved")
+                st.success("Issue updated and saved")
 
         st.download_button("📥 Export Internal Tracker", data=df.to_csv(index=False), file_name="issues.csv")
         st.divider()
@@ -215,14 +215,14 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
         st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
         st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
 
-        # 📰 Blog Board (Admin Only - Add/Delete Functionality)
-        st.subheader("📰 Intern Blog Board")
+        #Blog Board (Admin Only - Add/Delete Functionality)
+        st.subheader("Intern Blog Board")
         if os.path.exists("blog_posts.csv"):
             blog_df = pd.read_csv("blog_posts.csv")
             for i, row in blog_df.iterrows():
                 st.subheader(row["Title"])
                 st.write(row["Content"])
-                if st.session_state.is_admin and st.button(f"🗑️ Delete Blog {i+1}", key=f"delete_{i}"):
+                if st.session_state.is_admin and st.button(f"Delete Blog {i+1}", key=f"delete_{i}"):
                     blog_df = blog_df.drop(i)
                     blog_df.to_csv("blog_posts.csv", index=False)
                     st.success("Blog deleted!")
@@ -232,7 +232,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
             st.info("No blogs yet.")
 
         if st.session_state.is_admin:
-            st.subheader("✍️ Publish Blog")
+            st.subheader("Publish Blog")
             blog_title = st.text_input("Title")
             blog_content = st.text_area("Content")
             if st.button("Post Blog"):
@@ -241,7 +241,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                     entry.to_csv("blog_posts.csv", mode="a", header=False, index=False)
                 else:
                     entry.to_csv("blog_posts.csv", index=False)
-                st.success("✅ Blog posted!")
+                st.success("Blog posted!")
 
             st.subheader("➕ Add New Intern")
             new_name = st.text_input("Intern Name")
@@ -253,7 +253,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                     "Department": new_dept,
                     "LinkedIn": new_linkedin
                 })
-                st.success(f"✅ {new_name} added to intern list.")
+                st.success(f"{new_name} added to intern list.")
 
         st.divider()
 
@@ -261,7 +261,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
 # NOT LOGGED IN
 # -------------------------------
 else:
-    st.info("👈 Please log in using your name and access code in the sidebar.")
+    st.info("Please log in using your name and access code in the sidebar.")
 # -------------------------------
 
 st.divider()
