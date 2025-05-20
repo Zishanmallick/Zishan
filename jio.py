@@ -34,7 +34,7 @@ if "intern_data" not in st.session_state:
 # -------------------------------
 # LOAD LOGO FROM GITHUB
 # -------------------------------
-logo_url = "L.1.jpg"
+logo_url = "./L.1.jpg"
 
 try:
     response = requests.get(logo_url)
