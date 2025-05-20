@@ -265,6 +265,6 @@ else:
 # -------------------------------
 
 st.divider()
-st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick| For academic use only.")
+st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick | For academic use only.")
 st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
 st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
