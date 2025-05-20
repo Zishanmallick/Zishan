@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 from PIL import Image  # Import the Pillow library
+import requests # Import the requests library
 
 # -------------------------------
 # PAGE CONFIGURATION
@@ -30,30 +31,28 @@ if "intern_data" not in st.session_state:
         {"Name": "Rohit Mishra", "Department": "Data Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra-a6689031b"},
     ]
 
-
-
 # -------------------------------
-# RELATIVE PATH FOR LOGO
+# LOAD LOGO FROM GITHUB URL
 # -------------------------------
-image_dir = "images"  # Directory name (relative to jio.py)
-image_file = "L.1.jpg"  # File name (Make sure this is the correct file name)
-logo_path = os.path.join(image_dir, image_file)  # Construct the full relative path
+logo_url = "https://github.com/Zishanmallick/Zishan/blob/main/L.1.jpg"  # Raw URL to your logo
 
-
-# Add the Reliance logo
 try:
-    reliance_logo = Image.open(logo_path)
+    # Get the image data from the URL
+    response = requests.get(logo_url)
+    response.raise_for_status()  # Raise an exception for bad status codes
+
+    # Open the image using Pillow
+    reliance_logo = Image.open(BytesIO(response.content)) # Use BytesIO
+
     # Use columns for better layout
-    col1, col2 = st.columns([1, 4])  # Adjust column ratios as needed
+    col1, col2 = st.columns([1, 4])
     with col1:
-        st.image(reliance_logo, width=150)  # Adjust width as needed
+        st.image(reliance_logo, width=150)
     with col2:
         st.title("Reliance Intern & Policy Issue Portal")
-except FileNotFoundError:
-    st.error(f"Error: Logo file not found at {logo_path}. Please check the path.")
-    st.title("Reliance Intern & Policy Issue Portal")  # Show title even if logo is missing
-
-
+except Exception as e:
+    st.error(f"Error: Failed to load logo from {logo_url}.  Error: {e}")
+    st.title("Reliance Intern & Policy Issue Portal")
 
 # -------------------------------
 # LOGIN SIDEBAR
