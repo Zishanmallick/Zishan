@@ -207,8 +207,8 @@ except Exception as e:
 # This section handles user login authentication.
 # -------------------------------
 st.sidebar.title("Login")
-# Combine all intern names with admin/chairman/policy roles for the selectbox
-all_names = ["Admin", "Chairman", "Policy"] + [intern["Name"] for intern in st.session_state.intern_data]
+# Add new manager roles to the selectbox options, including Jio Legal Services
+all_names = ["Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"] + [intern["Name"] for intern in st.session_state.intern_data]
 selected_user = st.sidebar.selectbox("Select Your Name", all_names)
 entered_password = st.sidebar.text_input("Enter Access Code", type="password")
 
@@ -227,7 +227,26 @@ if st.sidebar.button("Login"):
         st.session_state.logged_in = True
         st.session_state.user_name = "Policy"
         st.success("Welcome to the Policy Dashboard!")
-    elif selected_user not in ["Admin", "Chairman", "Policy"] and entered_password == "jio2025":
+    # New Manager Login Logic
+    elif selected_user == "Jio Retail Manager" and entered_password == "retail@jio":
+        st.session_state.logged_in = True
+        st.session_state.user_name = "Jio Retail Manager"
+        st.success("Welcome, Jio Retail Manager!")
+    elif selected_user == "Jio Platforms Manager" and entered_password == "platforms@jio":
+        st.session_state.logged_in = True
+        st.session_state.user_name = "Jio Platforms Manager"
+        st.success("Welcome, Jio Platforms Manager!")
+    elif selected_user == "Jio Financial Manager" and entered_password == "financial@jio":
+        st.session_state.logged_in = True
+        st.session_state.user_name = "Jio Financial Manager"
+        st.success("Welcome, Jio Financial Manager!")
+    # New Jio Legal Services Login Logic
+    elif selected_user == "Jio Legal Services" and entered_password == "legal@jio":
+        st.session_state.logged_in = True
+        st.session_state.user_name = "Jio Legal Services"
+        st.success("Welcome, Jio Legal Services!")
+    # Intern Login Logic
+    elif selected_user not in ["Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"] and entered_password == "jio2025":
         st.session_state.logged_in = True
         st.session_state.user_name = selected_user
         st.success(f"Welcome, {selected_user}!")
@@ -241,13 +260,12 @@ if st.sidebar.button("Login"):
 # -------------------------------
 
 # Intern Dashboard (Logged in as an Intern)
-if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "Chairman", "Policy"]:
+if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"]:
     st.header("Your Dashboard – Weekly Tasks & Submissions")
     st.markdown(f"Welcome, **{st.session_state.user_name}**! Here are your tasks and ways to connect.")
     st.divider()
 
     # Define Tabs for Intern Dashboard to reduce vertical scrolling
-    # Changed tabs to only include Tasks, Blog Board, and Intern Profiles as requested
     tab_tasks, tab_blogs, tab_profiles = st.tabs([
         "📋 Tasks", "📰 Blog Board", "👥 Interns"
     ])
@@ -273,12 +291,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
         for week, desc in tasks.items():
             st.write(f"**{week}:** {desc}")
 
-        # Moved Reading Materials and Submit Task outside these specific tabs
-        # to simplify the main intern dashboard tabs as requested.
-        # If these are still desired, they can be placed as separate sections below the tabs
-        # or within a new tab if more tabs are added.
-
-        st.subheader("Reading Materials") # Still available but not in a tab
+        st.subheader("Reading Materials")
         pdfs = {
             "Week 1 – Jio Overview": "materials/JioBrain.pdf",
             "Week 2 – AI Strategy": "materials/Digital Transformation PPT for DFS Meeting_Sept2024.pdf",
@@ -294,7 +307,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
         st.divider()
 
-        st.subheader("Submit Task") # Still available but not in a tab
+        st.subheader("Submit Task")
         with st.form("upload_form"):
             week = st.selectbox("Select Week", list(tasks.keys()))
             file = st.file_uploader("Upload PDF/DOC", type=["pdf", "docx"])
@@ -308,11 +321,10 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
         st.divider()
 
-        st.subheader("Intern Chat") # Still available but not in a tab
+        st.subheader("Intern Chat")
         chat_msg = st.text_input("Message:")
         if st.button("Send") and chat_msg:
             st.session_state.chat.append(f"{st.session_state.user_name}: {chat_msg}")
-            # st.session_state.chat_input_key = "" # This requires setting a key on the text_input
             st.experimental_rerun()
         for msg in st.session_state.chat[-10:]:
             st.write(msg)
@@ -339,11 +351,13 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
 
 # -------------------------------
-# POLICY + ADMIN/CHAIRMAN DASHBOARD
+# POLICY + ADMIN/CHAIRMAN + MANAGERS DASHBOARD
 # This section is for authorized personnel to track policy issues.
 # -------------------------------
-elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman"]:
+elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"]:
     st.header("Policy Issues Tracker")
+    st.markdown(f"Welcome, **{st.session_state.user_name}**!")
+
 
     # Display Public Submissions from Google Form (external CSV URL)
     csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
@@ -356,106 +370,115 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
         st.error(f"Google Form data failed to load: {e}")
 
     # Internal Tracker & Review (Live via Firestore Concept)
-    if st.session_state.user_name in ["Admin", "Chairman", "Policy"]: # All these roles can view/update issues
-        st.subheader("Internal Tracker & Review (Live via Firestore Concept)")
+    st.subheader("Internal Tracker & Review (Live via Firestore Concept)")
 
-        # Fetch issues from conceptual Firestore (or update from onSnapshot in real Canvas)
-        if st.session_state.is_auth_ready:
-            st.session_state.issues_data = fetch_issues_from_firestore()
-        else:
-            st.info("Waiting for Firebase authentication to be ready to load issues...")
+    # Fetch issues from conceptual Firestore (or update from onSnapshot in real Canvas)
+    if st.session_state.is_auth_ready:
+        st.session_state.issues_data = fetch_issues_from_firestore()
+    else:
+        st.info("Waiting for Firebase authentication to be ready to load issues...")
 
-        df = st.session_state.issues_data.copy()
+    # Apply filtering based on user role
+    df = st.session_state.issues_data.copy()
+    user_role = st.session_state.user_name
 
-        if not df.empty:
-            # Filters for issues
-            col1, col2 = st.columns(2)
-            with col1:
-                selected_priority = st.selectbox("Filter by Priority", ["All"] + df["Priority"].dropna().unique().tolist())
-            with col2:
-                # Added "Solved" status for tracking
-                selected_status = st.selectbox("Filter by Status", ["All", "New", "In Review", "Actioned", "Needs Clarification", "Solved"])
+    if user_role == "Jio Retail Manager":
+        df = df[df["Business Vertical"].isin(["Retail", "Reliance Retail", "Reliance Digital"])]
+    elif user_role == "Jio Platforms Manager":
+        df = df[df["Business Vertical"] == "Jio Platforms"]
+    elif user_role == "Jio Financial Manager":
+        df = df[df["Business Vertical"] == "Jio Financial"]
+    elif user_role == "Jio Legal Services":
+        df = df[(df["Issue Type"] == "Regulatory") | (df["Gov Body"] == "SEBI")]
+    # Admin, Chairman, Policy see all issues (no filter applied here)
 
-            # Apply filters
-            filtered = df.copy()
-            if selected_priority != "All":
-                filtered = filtered[filtered["Priority"] == selected_priority]
-            if selected_status != "All":
-                filtered = filtered[filtered["Status"] == selected_status]
+    if not df.empty:
+        # Filters for issues
+        col1, col2 = st.columns(2)
+        with col1:
+            selected_priority = st.selectbox("Filter by Priority", ["All"] + df["Priority"].dropna().unique().tolist())
+        with col2:
+            selected_status = st.selectbox("Filter by Status", ["All", "New", "In Review", "Actioned", "Needs Clarification", "Solved"])
 
-            st.dataframe(filtered, use_container_width=True)
+        # Apply filters
+        filtered = df.copy()
+        if selected_priority != "All":
+            filtered = filtered[filtered["Priority"] == selected_priority]
+        if selected_status != "All":
+            filtered = filtered[filtered["Status"] == selected_status]
 
-            st.subheader("Update Issue Status")
-            # Allow selection of issue by title
-            issue_selection_options = df['Issue Title'].tolist()
-            selected_issue_title = st.selectbox("Select Issue to Update", issue_selection_options)
+        st.dataframe(filtered, use_container_width=True)
 
-            if selected_issue_title:
-                # Find the ID and current details of the selected issue
-                selected_issue_id = df[df['Issue Title'] == selected_issue_title]['id'].iloc[0]
-                current_issue_status = df[df['id'] == selected_issue_id]['Status'].iloc[0]
-                current_issue_response = df[df['id'] == selected_issue_id]['Response'].iloc[0]
+        st.subheader("Update Issue Status")
+        issue_selection_options = filtered['Issue Title'].tolist() # Only show filterable issues in selectbox
+        selected_issue_title = st.selectbox("Select Issue to Update", issue_selection_options)
 
-                # Update status and response fields
-                new_status = st.selectbox("Update Status", ["New", "In Review", "Actioned", "Needs Clarification", "Solved"],
-                                          index=["New", "In Review", "Actioned", "Needs Clarification", "Solved"].index(current_issue_status))
-                response_text = st.text_area("Add Response", value=current_issue_response)
+        if selected_issue_title:
+            # Find the ID and current details of the selected issue from the *original* (unfiltered) df
+            # to ensure we get the correct issue ID regardless of current filters.
+            original_df = st.session_state.issues_data.copy()
+            selected_issue_id = original_df[original_df['Issue Title'] == selected_issue_title]['id'].iloc[0]
+            current_issue_status = original_df[original_df['id'] == selected_issue_id]['Status'].iloc[0]
+            current_issue_response = original_df[original_df['id'] == selected_issue_id]['Response'].iloc[0]
 
-                if st.button("Update Issue"):
-                    # Call the conceptual Firestore update function
-                    update_issue_in_firestore(selected_issue_id, new_status, response_text, st.session_state.user_name)
-                    st.session_state.issues_data = fetch_issues_from_firestore() # Re-fetch to refresh display
-                    st.experimental_rerun() # Rerun to update dataframe display
-        else:
-            st.info("No issues found in the tracker.")
+            new_status = st.selectbox("Update Status", ["New", "In Review", "Actioned", "Needs Clarification", "Solved"],
+                                      index=["New", "In Review", "Actioned", "Needs Clarification", "Solved"].index(current_issue_status))
+            response_text = st.text_area("Add Response", value=current_issue_response)
 
-        # Export button for current view of issues
-        st.download_button("Export Internal Tracker (Current View)", data=df.to_csv(index=False), file_name="issues_tracker.csv")
-        st.divider()
+            if st.button("Update Issue"):
+                update_issue_in_firestore(selected_issue_id, new_status, response_text, st.session_state.user_name)
+                st.session_state.issues_data = fetch_issues_from_firestore() # Re-fetch to refresh display
+                st.experimental_rerun()
+    else:
+        st.info("No issues found for your department/role in the tracker.")
 
-        # Blog Board (Admin Only - Add/Delete Functionality)
-        st.subheader("Intern Blog Board")
-        if os.path.exists("blog_posts.csv"):
-            blog_df = pd.read_csv("blog_posts.csv")
-            for i, row in blog_df.iterrows():
-                st.subheader(row["Title"])
-                st.write(row["Content"])
-                # Admin can delete blogs
-                if st.session_state.is_admin and st.button(f"Delete Blog {i+1}", key=f"delete_blog_{i}"):
-                    blog_df = blog_df.drop(i)
-                    blog_df.to_csv("blog_posts.csv", index=False)
-                    st.success("Blog deleted!")
-                    st.experimental_rerun() # Rerun to update blog list
-                st.markdown("---")
-        else:
-            st.info("No blogs yet.")
+    # Export button for current view of issues
+    st.download_button("Export Internal Tracker (Current View)", data=df.to_csv(index=False), file_name="issues_tracker.csv")
+    st.divider()
 
-        # Admin specific functionalities
-        if st.session_state.is_admin:
-            st.subheader("Publish Blog")
-            blog_title = st.text_input("Title")
-            blog_content = st.text_area("Content")
-            if st.button("Post Blog"):
-                entry = pd.DataFrame([[blog_title, blog_content]], columns=["Title", "Content"])
-                if os.path.exists("blog_posts.csv"):
-                    entry.to_csv("blog_posts.csv", mode="a", header=False, index=False)
-                else:
-                    entry.to_csv("blog_posts.csv", index=False)
-                st.success("Blog posted!")
-                st.experimental_rerun() # Rerun to show new blog
+    # Blog Board (Admin Only - Add/Delete Functionality)
+    st.subheader("Intern Blog Board")
+    if os.path.exists("blog_posts.csv"):
+        blog_df = pd.read_csv("blog_posts.csv")
+        for i, row in blog_df.iterrows():
+            st.subheader(row["Title"])
+            st.write(row["Content"])
+            # Admin can delete blogs
+            if st.session_state.is_admin and st.button(f"Delete Blog {i+1}", key=f"delete_blog_{i}"):
+                blog_df = blog_df.drop(i)
+                blog_df.to_csv("blog_posts.csv", index=False)
+                st.success("Blog deleted!")
+                st.experimental_rerun() # Rerun to update blog list
+            st.markdown("---")
+    else:
+        st.info("No blogs yet.")
 
-            st.subheader("Add New Intern")
-            new_name = st.text_input("Intern Name", key="new_intern_name")
-            new_dept = st.text_input("Department", key="new_intern_dept")
-            new_linkedin = st.text_input("LinkedIn URL", key="new_intern_linkedin")
-            if st.button("Add Intern", key="add_intern_button"):
-                st.session_state.intern_data.append({
-                    "Name": new_name,
-                    "Department": new_dept,
-                    "LinkedIn": new_linkedin
-                })
-                st.success(f"{new_name} added to intern list.")
-                st.experimental_rerun() # Rerun to update intern list in selectbox
+    # Admin specific functionalities
+    if st.session_state.is_admin:
+        st.subheader("Publish Blog")
+        blog_title = st.text_input("Title")
+        blog_content = st.text_area("Content")
+        if st.button("Post Blog"):
+            entry = pd.DataFrame([[blog_title, blog_content]], columns=["Title", "Content"])
+            if os.path.exists("blog_posts.csv"):
+                entry.to_csv("blog_posts.csv", mode="a", header=False, index=False)
+            else:
+                entry.to_csv("blog_posts.csv", index=False)
+            st.success("Blog posted!")
+            st.experimental_rerun()
+
+        st.subheader("Add New Intern")
+        new_name = st.text_input("Intern Name", key="new_intern_name")
+        new_dept = st.text_input("Department", key="new_intern_dept")
+        new_linkedin = st.text_input("LinkedIn URL", key="new_intern_linkedin")
+        if st.button("Add Intern", key="add_intern_button"):
+            st.session_state.intern_data.append({
+                "Name": new_name,
+                "Department": new_dept,
+                "LinkedIn": new_linkedin
+            })
+            st.success(f"{new_name} added to intern list.")
+            st.experimental_rerun()
 
 # -------------------------------
 # NOT LOGGED IN (Main Landing Page with Tabs)
@@ -478,7 +501,7 @@ else:
             
             **Interns:** Access your weekly tasks, reading materials, connect with other interns, and submit your work.
             
-            **Policy/Admin/Chairman:** Monitor and manage policy issues, review public submissions, and oversee intern activities.
+            **Policy/Admin/Chairman/Managers:** Monitor and manage policy issues, review public submissions, and oversee intern activities.
             
             Please use the login section in the sidebar to get started.
         """)
