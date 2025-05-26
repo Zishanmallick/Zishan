@@ -106,9 +106,9 @@ def initialize_firebase():
 if not st.session_state.is_auth_ready:
     initialize_firebase()
 
-# Display current user ID in the sidebar if authenticated
-if st.session_state.user_id:
-    st.sidebar.write(f"Logged in as: **{st.session_state.user_id}**")
+# --- REMOVED: Display current user ID in the sidebar if authenticated ---
+# if st.session_state.user_id:
+#     st.sidebar.write(f"Logged in as: **{st.session_state.user_id}**")
 
 
 # -------------------------------
@@ -267,7 +267,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 
     # Define Tabs for Intern Dashboard to reduce vertical scrolling
     tab_tasks, tab_blogs, tab_profiles = st.tabs([
-        "Tasks", "Blog Board", "Interns"
+        "📋 Tasks", "📰 Blog Board", "👥 Interns"
     ])
 
     with tab_tasks: # Weekly Tasks & Announcements Tab
