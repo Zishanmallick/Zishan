@@ -10,7 +10,7 @@ import uuid # For generating unique IDs for new issues (though not directly used
 
 # --- Configuration for Google Sheet ---
 # This URL is the 'Publish to web' CSV link for your new spreadsheet.
-ISSUES_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7KUWovEfXSgd7OO61zgdsWcNP1i_LaOlXCe_t7PiJVXhTS_mfyQcrpiNYWCQBs7PgFzhX_QASeVPG/pub?output=csv"
+ISSUES_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1tq_g6q7tnS2OQjhehSu4lieR3wTOJ-_s0RfItq0XzWI/export?format=csv&gid=0"
 
 # -------------------------------
 # PAGE CONFIGURATION
@@ -346,7 +346,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                     save_issues_to_google_sheet_simulated(st.session_state.issues_data)
                     st.success("Issue updated in current session's view.")
                     # Rerun to reflect changes in the dataframe display
-                    st.rerun() # Changed from st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("Cannot update: Issue ID not found.")
     else:
@@ -366,7 +366,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 blog_df = blog_df.drop(i)
                 blog_df.to_csv("blog_posts.csv", index=False)
                 st.success("Blog deleted!")
-                st.rerun() # Changed from st.experimental_rerun()
+                st.rerun()
             st.markdown("---")
     else:
         st.info("No blogs yet.")
@@ -382,7 +382,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
             else:
                 entry.to_csv("blog_posts.csv", index=False)
             st.success("Blog posted!")
-            st.rerun() # Changed from st.experimental_rerun()
+            st.rerun()
 
         st.subheader("Add New Intern")
         new_name = st.text_input("Intern Name", key="new_intern_name")
@@ -395,7 +395,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 "LinkedIn": new_linkedin
             })
             st.success(f"{new_name} added to intern list.")
-            st.rerun() # Changed from st.experimental_rerun()
+            st.rerun()
 
 # -------------------------------
 # NOT LOGGED IN (Main Landing Page with Tabs)
