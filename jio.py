@@ -343,7 +343,7 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
         chat_msg = st.text_input("Message:")
         if st.button("Send") and chat_msg:
             st.session_state.chat.append(f"{st.session_state.user_name}: {chat_msg}")
-            st.experimental_rerun()
+            # Removed st.experimental_rerun() from here
         for msg in st.session_state.chat[-10:]:
             st.write(msg)
 
