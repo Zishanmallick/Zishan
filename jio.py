@@ -240,7 +240,6 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
         for msg in st.session_state.chat[-10:]:
             st.write(msg)
 
-
     with tab_blogs:
         st.subheader("Intern Blog Board")
         if os.path.exists("blog_posts.csv"):
@@ -265,22 +264,131 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
 # POLICY + ADMIN/CHAIRMAN + MANAGERS DASHBOARD
 # -------------------------------
 elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Admin", "Chairman", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"]:
-    st.header("Policy Issues Tracker")
-    st.markdown(f"Welcome, **{st.session_state.user_name}**!")
+    # Determine the tabs based on the user role
+    if st.session_state.user_name in ["Admin", "Chairman"]:
+        # Admin and Chairman see both Policy and Intern tabs
+        tab_policy, tab_intern_blogs, tab_intern_profiles, tab_intern_tasks, tab_intern_chat = st.tabs([
+            "Policy Issues Tracker", "Intern Blog Board", "Intern Profiles", "Intern Tasks", "Intern Chat"
+        ])
+    else:
+        # Other managers and Policy only see Policy tab
+        tab_policy = st.tabs(["Policy Issues Tracker"])[0]
 
-    # Public Submissions from Google Form (external CSV URL) - unchanged
-    csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
-    try:
-        df_live = pd.read_csv(csv_url)
-        st.success("Google Form data loaded successfully!")
-        st.subheader("Public Submissions (from Google Form)")
-        st.dataframe(df_live, use_container_width=True)
-    except Exception as e:
-        st.error(f"Google Form data failed to load: {e}")
+    with tab_policy:
+        st.header("Policy Issues Tracker")
+        st.markdown(f"Welcome, **{st.session_state.user_name}**!")
 
-    st.subheader("Internal Tracker & Review (Live via Google Sheet)")
+        # Public Submissions from Google Form (external CSV URL) - unchanged
+        csv_url = "https://docs.google.com/sheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
+        try:
+            df_live = pd.read_csv(csv_url)
+            st.success("Google Form data loaded successfully!")
+            st.subheader("Public Submissions (from Google Form)")
+            st.dataframe(df_live, use_container_width=True)
+        except Exception as e:
+            st.error(f"Google Form data failed to load: {e}")
 
-    # Load issues from the new Google Sheet URL
-    st.session_state.issues_data = load_issues_from_google_sheet()
+        st.subheader("Internal Tracker & Review (Live via Google Sheet)")
 
-    df = st.session_state
+        # Load issues from the new Google Sheet URL
+        st.session_state.issues_data = load_issues_from_google_sheet()
+        df = st.session_state.issues_data
+
+        # Display issues for review and update
+        if not df.empty:
+            st.dataframe(df, use_container_width=True)
+
+            st.subheader("Update an Issue")
+            with st.form("update_issue_form"):
+                issue_id_to_update = st.selectbox("Select Issue ID to Update", df['id'].unique())
+                issue_to_update = df[df['id'] == issue_id_to_update].iloc[0]
+
+                new_status = st.selectbox("New Status", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(issue_to_update['Status']) if 'Status' in issue_to_update and issue_to_update['Status'] in ["Open", "In Progress", "Resolved", "Closed"] else 0)
+                response = st.text_area("Response/Notes", value=issue_to_update['Response'] if 'Response' in issue_to_update else "")
+
+                update_submitted = st.form_submit_button("Update Issue")
+                if update_submitted:
+                    idx = df[df['id'] == issue_id_to_update].index[0]
+                    st.session_state.issues_data.loc[idx, 'Status'] = new_status
+                    st.session_state.issues_data.loc[idx, 'Response'] = response
+                    st.session_state.issues_data.loc[idx, 'Updated By'] = st.session_state.user_name
+                    st.session_state.issues_data.loc[idx, 'Last Updated'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                    if save_issues_to_google_sheet_simulated(st.session_state.issues_data):
+                        st.success(f"Issue {issue_id_to_update} updated successfully!")
+                        st.experimental_rerun() # Rerun to refresh the dataframe
+                    else:
+                        st.error("Failed to update issue (simulated save failed).")
+        else:
+            st.info("No internal issues to display yet.")
+
+    if st.session_state.user_name in ["Admin", "Chairman"]:
+        with tab_intern_blogs:
+            st.subheader("Intern Blog Board")
+            if os.path.exists("blog_posts.csv"):
+                blog_df = pd.read_csv("blog_posts.csv")
+                if not blog_df.empty:
+                    for _, row in blog_df.iterrows():
+                        st.subheader(row["Title"])
+                        st.write(f"**Author:** {row['Author']}")
+                        st.write(row["Content"])
+                        st.markdown("---")
+                else:
+                    st.info("No blogs yet.")
+            else:
+                st.info("No blog posts file found.")
+
+        with tab_intern_profiles:
+            st.subheader("Intern Profiles")
+            for intern in st.session_state.intern_data:
+                st.subheader(intern["Name"])
+                st.write(f"**Department:** {intern['Department']}")
+                st.markdown(f"[LinkedIn]({intern['LinkedIn']})", unsafe_allow_html=True)
+                st.markdown("---")
+
+        with tab_intern_tasks:
+            st.subheader("Weekly Tasks (Intern View)")
+            tasks = {
+                "Week 1": "Intro to Jio Platforms + Submit project preference form",
+                "Week 2": "Research Jio's AI Strategy and write 500-word report",
+                "Week 3": "Group presentation on Jio Digital Transformation"
+            }
+            for week, desc in tasks.items():
+                st.write(f"**{week}:** {desc}")
+            
+            st.subheader("Reading Materials (Intern View)")
+            pdfs = {
+                "Week 1 – Jio Overview": "materials/JioBrain.pdf",
+                "Week 2 – AI Strategy": "materials/Digital Transformation PPT for DFS Meeting_Sept2024.pdf",
+                "Week 3 – Digital Transformation": "materials/RIL_4Q_FY25_Analyst_Presentation_25Apr25.pdf"
+            }
+            for title, path in pdfs.items():
+                st.write(f"**{title}**")
+                try:
+                    # In a real application, you might want to display a link or a summary
+                    # For a full download button, you'd need the actual file in your app directory
+                    st.info(f"File available at: `{path}` (Download functionality for admins/chairmen not implemented here, but interns can download.)")
+                except FileNotFoundError:
+                    st.warning(f"Missing file: {os.path.basename(path)}")
+
+            st.subheader("Uploaded Tasks by Interns")
+            # In a real scenario, you'd list and provide access to uploaded files here.
+            # For this example, we'll just indicate where they would be.
+            st.info("Uploaded intern tasks would be listed here (e.g., from the 'uploads' directory).")
+            # You might iterate through 'uploads' directory and list files
+            # for uploaded_file in os.listdir("uploads"):
+            #     st.write(uploaded_file)
+
+        with tab_intern_chat:
+            st.subheader("Intern Chat (Read-Only for Admin/Chairman)")
+            if st.session_state.chat:
+                for msg in st.session_state.chat:
+                    st.write(msg)
+            else:
+                st.info("No chat messages yet.")
+
+# -------------------------------
+# NOT LOGGED IN
+# -------------------------------
+else:
+    st.info("Please log in using the sidebar to access the portal.")
