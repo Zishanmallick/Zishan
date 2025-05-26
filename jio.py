@@ -491,7 +491,7 @@ else:
 
     # Define Tabs for the Main Landing Page (when not logged in)
     tab_welcome, tab_interns_public, tab_policy_public = st.tabs([
-        "👋 Welcome", "👥 Interns Directory", "📢 Public Policy Data"
+        "Welcome", "Interns Directory", "Public Policy Data"
     ])
 
     with tab_welcome:
