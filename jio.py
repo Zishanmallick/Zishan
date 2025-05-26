@@ -6,20 +6,11 @@ import requests
 from io import BytesIO  # Required to open image from bytes
 import datetime
 import json
-import uuid # For generating unique IDs for new issues
-
-# --- Google Sheets API Imports ---
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import uuid # For generating unique IDs for new issues (though not directly used for Google Sheet updates)
 
 # --- Configuration for Google Sheet ---
-# This is the base URL of your Google Sheet. gspread will use this to open it.
-ISSUES_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1tq_g6q7tnS2OQjhehSu4lieR3wTOJ-_s0RfItq0XzWI"
-
-# --- IMPORTANT: Path to your Google Service Account Credentials JSON file ---
-# Make sure this file is in the same directory as your Streamlit app or provide a full path.
-# For deployment, consider using Streamlit Secrets for this sensitive file.
-CREDENTIALS_FILE_PATH = "credentials.json" # <--- UPDATE THIS IF YOUR FILE IS NAMED DIFFERENTLY OR IS IN ANOTHER LOCATION
+# This URL is the 'Publish to web' CSV link for your new spreadsheet.
+ISSUES_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7KUWovEfXSgd7OO61zgdsWcNP1i_LaOlXCe_t7PiJVXhTS_mfyQcrpiNYWCQBs7PgFzhX_QASeVPG/pub?output=csv"
 
 # -------------------------------
 # PAGE CONFIGURATION
@@ -48,7 +39,7 @@ if "intern_data" not in st.session_state:
         {"Name": "Rohit Mishra", "Department": "Data Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra-a6689031b"},
     ]
 
-# Initialize issues data (will be populated by load_issues_from_google_sheet)
+# Initialize issues data for the spreadsheet
 if 'issues_data' not in st.session_state:
     st.session_state.issues_data = pd.DataFrame(columns=[
         "id", "Business Vertical", "Team", "Contact", "Email/Phone",
@@ -58,45 +49,25 @@ if 'issues_data' not in st.session_state:
     ])
 
 # -------------------------------
-# GOOGLE SHEET OPERATIONS
+# SPREADSHEET (GOOGLE SHEET) OPERATIONS
 # -------------------------------
-@st.cache_resource # Cache the gspread client to avoid re-authenticating on every rerun
-def get_gspread_client():
-    """Authenticate and return a gspread client."""
-    try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        if not os.path.exists(CREDENTIALS_FILE_PATH):
-            st.error(f"Authentication Error: Google Sheets credentials file not found at '{CREDENTIALS_FILE_PATH}'. Please ensure it exists and the path is correct.")
-            return None
-        creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE_PATH, scope)
-        client = gspread.authorize(creds)
-        return client
-    except Exception as e:
-        st.error(f"Authentication failed for Google Sheets: {e}. Please check your credentials file and permissions.")
-        return None
 
 def load_issues_from_google_sheet():
-    """Loads issues from the Google Sheet."""
-    client = get_gspread_client()
-    if not client:
-        return pd.DataFrame(columns=[ # Return empty df on auth failure
-            "id", "Business Vertical", "Team", "Contact", "Email/Phone",
-            "Issue Title", "Description", "Issue Type", "Gov Body",
-            "Priority", "Resolution", "File", "Date", "Status", "Response",
-            "Updated By", "Last Updated"
-        ])
+    """
+    Loads issues from the specified Google Sheet URL.
+    """
     try:
-        sheet = client.open_by_url(ISSUES_GOOGLE_SHEET_URL).sheet1
-        data = sheet.get_all_records()  # Fetch all rows as a list of dicts
-        df = pd.DataFrame(data)
-
-        # Ensure 'id' column exists, add it if missing (for new rows added manually to sheet)
+        df = pd.read_csv(ISSUES_GOOGLE_SHEET_URL)
+        # Ensure 'id' column is present, add if missing.
+        # For a Google Sheet, you'd typically manage IDs within the sheet itself.
+        # If not present, we'll assign temporary UUIDs for internal app use.
         if 'id' not in df.columns:
             df['id'] = [str(uuid.uuid4()) for _ in range(len(df))]
-            st.warning("No 'id' column found in Google Sheet. Assigning temporary UUIDs for internal use. Please add an 'id' column to your sheet for persistent IDs.")
+            st.warning("No 'id' column found in Google Sheet. Assigning temporary UUIDs for internal use.")
         return df
     except Exception as e:
-        st.error(f"Error loading issues from Google Sheet: {e}. Ensure the sheet is shared with the service account and the URL is correct.")
+        st.error(f"Error loading issues from Google Sheet: {e}. Please ensure the sheet is published to web as CSV and the URL is correct.")
+        # Return an empty DataFrame if loading fails
         return pd.DataFrame(columns=[
             "id", "Business Vertical", "Team", "Contact", "Email/Phone",
             "Issue Title", "Description", "Issue Type", "Gov Body",
@@ -104,25 +75,16 @@ def load_issues_from_google_sheet():
             "Updated By", "Last Updated"
         ])
 
-def save_issues_to_google_sheet(df):
-    """Saves the issues DataFrame back to Google Sheet."""
-    client = get_gspread_client()
-    if not client:
-        st.error("Cannot save: Google Sheets client not authenticated.")
-        return False
-    try:
-        sheet = client.open_by_url(ISSUES_GOOGLE_SHEET_URL).sheet1
-
-        # Clear existing data and upload the updated dataframe
-        # Note: This clears ALL data in sheet1 and replaces it.
-        # For partial updates, you'd need to find the specific row and update it.
-        sheet.clear()
-        sheet.update([df.columns.values.tolist()] + df.values.tolist())
-        st.success("Changes saved to Google Sheet.")
-        return True
-    except Exception as e:
-        st.error(f"Error saving issues to Google Sheet: {e}. Check service account permissions.")
-        return False
+def save_issues_to_google_sheet_simulated(df):
+    """
+    Simulates saving the current issues DataFrame.
+    Direct writing to a public Google Sheet from Streamlit Python is complex
+    and requires Google API authentication. This function only updates
+    the in-memory DataFrame and provides a message.
+    """
+    st.warning("Saving changes to the Google Sheet is not directly supported in this demo. Changes are only reflected in this session.")
+    st.info("To persist changes, you would need to implement Google Sheets API integration with proper authentication.")
+    return True # Indicate conceptual success
 
 # Load issues data on app start from Google Sheet
 st.session_state.issues_data = load_issues_from_google_sheet()
@@ -144,7 +106,7 @@ try:
     with col2:
         st.title("Reliance Intern & Policy Issue Portal")
 except Exception as e:
-    st.error(f"Error: Failed to load logo from {logo_url}. Error: {e}")
+    st.error(f"Error: Failed to load logo from {logo_url}. Please ensure the URL is correct and points to the raw image file. Error: {e}")
     st.title("Reliance Intern & Policy Issue Portal")
 
 
@@ -157,7 +119,6 @@ selected_user = st.sidebar.selectbox("Select Your Name", all_names)
 entered_password = st.sidebar.text_input("Enter Access Code", type="password")
 
 if st.sidebar.button("Login"):
-    # Custom authentication based on roles
     if selected_user == "Admin" and entered_password == "admin@jio":
         st.session_state.logged_in = True
         st.session_state.user_name = "Admin"
@@ -187,7 +148,6 @@ if st.sidebar.button("Login"):
         st.session_state.logged_in = True
         st.session_state.user_name = "Jio Legal Services"
         st.success("Welcome, Jio Legal Services!")
-    # Intern Login Logic
     elif selected_user not in ["Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"] and entered_password == "jio2025":
         st.session_state.logged_in = True
         st.session_state.user_name = selected_user
@@ -205,7 +165,7 @@ if st.session_state.logged_in:
         st.session_state.user_name = ""
         st.session_state.is_admin = False
         st.success("You have been logged out.")
-        st.rerun() # Use st.rerun() for full app refresh
+        # Streamlit will naturally re-render due to session state changes.
 
 
 # -------------------------------
@@ -323,162 +283,4 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
     # Load issues from the new Google Sheet URL
     st.session_state.issues_data = load_issues_from_google_sheet()
 
-    df = st.session_state.issues_data.copy()
-    user_role = st.session_state.user_name
-
-    if user_role == "Jio Retail Manager":
-        df = df[df["Business Vertical"].isin(["Retail", "Reliance Retail", "Reliance Digital"])]
-    elif user_role == "Jio Platforms Manager":
-        df = df[df["Business Vertical"] == "Jio Platforms"]
-    elif user_role == "Jio Financial Manager":
-        df = df[df["Business Vertical"] == "Jio Financial"]
-    elif user_role == "Jio Legal Services":
-        df = df[(df["Issue Type"] == "Regulatory") | (df["Gov Body"] == "SEBI")]
-
-    if not df.empty:
-        col1, col2 = st.columns(2)
-        with col1:
-            selected_priority = st.selectbox("Filter by Priority", ["All"] + df["Priority"].dropna().unique().tolist())
-        with col2:
-            selected_status = st.selectbox("Filter by Status", ["All", "New", "In Review", "Actioned", "Needs Clarification", "Solved"])
-
-        filtered = df.copy()
-        if selected_priority != "All":
-            filtered = filtered[filtered["Priority"] == selected_priority]
-        if selected_status != "All":
-            filtered = filtered[filtered["Status"] == selected_status]
-
-        st.dataframe(filtered, use_container_width=True)
-
-        st.subheader("Update Issue Status (Changes are persisted to Google Sheet)")
-        issue_selection_options = filtered['Issue Title'].tolist()
-        selected_issue_title = st.selectbox("Select Issue to Update", issue_selection_options)
-
-        if selected_issue_title:
-            original_df = st.session_state.issues_data.copy()
-            selected_issue_row = original_df[original_df['Issue Title'] == selected_issue_title]
-            if not selected_issue_row.empty:
-                selected_issue_id = selected_issue_row['id'].iloc[0]
-                current_issue_status = selected_issue_row['Status'].iloc[0]
-                current_issue_response = selected_issue_row['Response'].iloc[0]
-            else:
-                selected_issue_id = None
-                current_issue_status = "New"
-                current_issue_response = ""
-                st.warning("Could not find selected issue in original data. Defaulting status/response.")
-
-
-            new_status = st.selectbox("Update Status", ["New", "In Review", "Actioned", "Needs Clarification", "Solved"],
-                                      index=["New", "In Review", "Actioned", "Needs Clarification", "Solved"].index(current_issue_status))
-            response_text = st.text_area("Add Response", value=current_issue_response)
-
-            if st.button("Update Issue"):
-                if selected_issue_id:
-                    idx = st.session_state.issues_data[st.session_state.issues_data['id'] == selected_issue_id].index[0]
-                    st.session_state.issues_data.at[idx, "Status"] = new_status
-                    st.session_state.issues_data.at[idx, "Response"] = response_text
-                    st.session_state.issues_data.at[idx, "Updated By"] = st.session_state.user_name
-                    st.session_state.issues_data.at[idx, "Last Updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                    # Save changes to Google Sheet
-                    save_issues_to_google_sheet(st.session_state.issues_data)
-                    st.success("Issue updated in current session's view and persisted to Google Sheet.")
-                    st.rerun()
-                else:
-                    st.error("Cannot update: Issue ID not found.")
-    else:
-        st.info("No issues found for your department/role in the tracker.")
-
-    st.download_button("Export Internal Tracker (Current View)", data=df.to_csv(index=False), file_name="issues_tracker.csv")
-    st.divider()
-
-    st.subheader("Intern Blog Board")
-    if os.path.exists("blog_posts.csv"):
-        blog_df = pd.read_csv("blog_posts.csv")
-        for i, row in blog_df.iterrows():
-            st.subheader(row["Title"])
-            st.write(row["Content"])
-            if st.session_state.is_admin and st.button(f"Delete Blog {i+1}", key=f"delete_blog_{i}"):
-                blog_df = blog_df.drop(i)
-                blog_df.to_csv("blog_posts.csv", index=False)
-                st.success("Blog deleted!")
-                st.rerun()
-            st.markdown("---")
-    else:
-        st.info("No blogs yet.")
-
-    if st.session_state.is_admin:
-        st.subheader("Publish Blog")
-        blog_title = st.text_input("Title")
-        blog_content = st.text_area("Content")
-        if st.button("Post Blog"):
-            entry = pd.DataFrame([[blog_title, blog_content]], columns=["Title", "Content"])
-            if os.path.exists("blog_posts.csv"):
-                entry.to_csv("blog_posts.csv", mode="a", header=False, index=False)
-            else:
-                entry.to_csv("blog_posts.csv", index=False)
-            st.success("Blog posted!")
-            st.rerun()
-
-        st.subheader("Add New Intern")
-        new_name = st.text_input("Intern Name", key="new_intern_name")
-        new_dept = st.text_input("Department", key="new_intern_dept")
-        new_linkedin = st.text_input("LinkedIn URL", key="new_intern_linkedin")
-        if st.button("Add Intern", key="add_intern_button"):
-            st.session_state.intern_data.append({
-                "Name": new_name,
-                "Department": new_dept,
-                "LinkedIn": new_linkedin
-            })
-            st.success(f"{new_name} added to intern list.")
-            st.rerun()
-
-# -------------------------------
-# NOT LOGGED IN (Main Landing Page with Tabs)
-# -------------------------------
-else:
-    st.header("Welcome to the Reliance Intern & Policy Issue Portal")
-    st.markdown("Please log in using the sidebar to access your personalized dashboard.")
-    st.divider()
-
-    tab_welcome, tab_interns_public, tab_policy_public = st.tabs([
-        "Welcome", "Interns Directory", "Public Policy Data"
-    ])
-
-    with tab_welcome:
-        st.markdown("""
-            This portal serves as a central hub for Reliance interns and for tracking policy-related issues.
-            Depending on your login credentials, you will gain access to different features.
-
-            **Interns:** Access your weekly tasks, reading materials, connect with other interns, and submit your work.
-
-            **Policy/Admin/Chairman/Managers:** Monitor and manage policy issues, review public submissions, and oversee intern activities.
-
-            Please use the login section in the sidebar to get started.
-        """)
-
-    with tab_interns_public:
-        st.subheader("Our Interns (Public View)")
-        st.info("This section provides a public directory of our current interns. Full details are available upon login.")
-        for intern in st.session_state.intern_data:
-            st.markdown(f"**{intern['Name']}** - {intern['Department']}")
-            st.markdown("---")
-
-    with tab_policy_public:
-        st.subheader("Public Policy Submissions Overview")
-        st.info("This tab displays publicly submitted policy data from our Google Form. More detailed tracking and updates are available to authorized personnel upon login.")
-        # This is the original public Google Form URL, kept separate from the internal tracker.
-        csv_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXnxefBfU43AgIEdCeCd5QBMgGVSifK9fSmSFuZd_jA_6B0Xem13xSjVqCY31QKsB88sjlOEa5T_gX/pub?output=csv"
-        try:
-            df_live = pd.read_csv(csv_url)
-            st.dataframe(df_live, use_container_width=True)
-        except Exception as e:
-            st.warning(f"Could not load public form data at this time. Please try again later. Error: {e}")
-
-# -------------------------------
-# FOOTER
-# -------------------------------
-st.divider()
-st.markdown("© 2025 Reliance Jio Internship designed by Zishan Mallick | For academic use only.")
-st.markdown("**Disclaimer:** This is a simulated environment for educational purposes. All data is fictional and does not represent real issues or individuals.")
-st.markdown("**Note:** Please do not share any sensitive information. This is a public platform.")
+    df = st.session_state
