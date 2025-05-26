@@ -252,8 +252,24 @@ if st.sidebar.button("Login"):
         st.success(f"Welcome, {selected_user}!")
     else:
         st.error("Incorrect Access Code.")
-    # Removed st.experimental_rerun() from here to prevent AttributeError
     # Streamlit will naturally rerun due to session state changes.
+
+
+# -------------------------------
+# LOGOUT FUNCTIONALITY
+# -------------------------------
+# Only show logout button if user is logged in
+if st.session_state.logged_in:
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user_name = ""
+        st.session_state.is_admin = False
+        # Optional: Clear other session state data if desired on logout
+        # st.session_state.chat = []
+        # st.session_state.issues_data = pd.DataFrame(...)
+        st.success("You have been logged out.")
+        st.experimental_rerun() # Rerun to go back to the unauthenticated state
+
 
 # -------------------------------
 # MAIN APPLICATION CONTENT
@@ -267,8 +283,9 @@ if st.session_state.logged_in and st.session_state.user_name not in ["Admin", "C
     st.divider()
 
     # Define Tabs for Intern Dashboard to reduce vertical scrolling
+    # Emojis removed from tab titles
     tab_tasks, tab_blogs, tab_profiles = st.tabs([
-        "📋 Tasks", "📰 Blog Board", "👥 Interns"
+        "Tasks", "Blog Board", "Interns"
     ])
 
     with tab_tasks: # Weekly Tasks & Announcements Tab
@@ -491,8 +508,9 @@ else:
     st.divider()
 
     # Define Tabs for the Main Landing Page (when not logged in)
+    # Emojis removed from tab titles
     tab_welcome, tab_interns_public, tab_policy_public = st.tabs([
-        "👋 Welcome", "👥 Interns Directory", "📢 Public Policy Data"
+        "Welcome", "Interns Directory", "Public Policy Data"
     ])
 
     with tab_welcome:
