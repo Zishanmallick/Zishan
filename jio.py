@@ -346,7 +346,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                     save_issues_to_google_sheet_simulated(st.session_state.issues_data)
                     st.success("Issue updated in current session's view.")
                     # Rerun to reflect changes in the dataframe display
-                    st.experimental_rerun()
+                    st.rerun() # Changed from st.experimental_rerun()
                 else:
                     st.error("Cannot update: Issue ID not found.")
     else:
@@ -366,7 +366,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 blog_df = blog_df.drop(i)
                 blog_df.to_csv("blog_posts.csv", index=False)
                 st.success("Blog deleted!")
-                st.experimental_rerun()
+                st.rerun() # Changed from st.experimental_rerun()
             st.markdown("---")
     else:
         st.info("No blogs yet.")
@@ -382,7 +382,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
             else:
                 entry.to_csv("blog_posts.csv", index=False)
             st.success("Blog posted!")
-            st.experimental_rerun()
+            st.rerun() # Changed from st.experimental_rerun()
 
         st.subheader("Add New Intern")
         new_name = st.text_input("Intern Name", key="new_intern_name")
@@ -395,7 +395,7 @@ elif st.session_state.logged_in and st.session_state.user_name in ["Policy", "Ad
                 "LinkedIn": new_linkedin
             })
             st.success(f"{new_name} added to intern list.")
-            st.experimental_rerun()
+            st.rerun() # Changed from st.experimental_rerun()
 
 # -------------------------------
 # NOT LOGGED IN (Main Landing Page with Tabs)
@@ -413,11 +413,11 @@ else:
         st.markdown("""
             This portal serves as a central hub for Reliance interns and for tracking policy-related issues.
             Depending on your login credentials, you will gain access to different features.
-            
+
             **Interns:** Access your weekly tasks, reading materials, connect with other interns, and submit your work.
-            
+
             **Policy/Admin/Chairman/Managers:** Monitor and manage policy issues, review public submissions, and oversee intern activities.
-            
+
             Please use the login section in the sidebar to get started.
         """)
 
