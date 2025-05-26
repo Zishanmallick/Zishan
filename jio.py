@@ -267,8 +267,7 @@ if st.session_state.logged_in:
         # Optional: Clear other session state data if desired on logout
         # st.session_state.chat = []
         # st.session_state.issues_data = pd.DataFrame(...)
-        st.success("You have been logged out.")
-        st.experimental_rerun() # Rerun to go back to the unauthenticated state
+        # Removed st.experimental_rerun() from here (line 271 in original context)
 
 
 # -------------------------------
