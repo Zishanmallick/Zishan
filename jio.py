@@ -32,7 +32,7 @@ ADMIN_NAMES = [
 ]
 
 MANAGER_NAMES = [
-    "Policy", "Jio Retail Manager", "Jio Platforms Manager",
+    "Jio Policy Manager", "Jio Retail Manager", "Jio Platforms Manager",
     "Jio Financial Manager", "Jio Legal Services"
 ]
 
@@ -460,7 +460,7 @@ def update_tracker_with_responses(log_ws):
 def display_issue_tracker():
     """Displays the issue tracker functionality (admin-only)."""
     st.header("Issue Tracker")
-    st.info("Admin-only section for managing issues raised by departments.")
+    st.info("Employee-only section for managing issues raised by departments.")
  
     log_ws = get_worksheet(client, SHEET_CONFIG["log"]["id"], SHEET_CONFIG["log"]["name"])
     tracker_ws = get_worksheet(client, SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"])
@@ -476,7 +476,10 @@ def display_issue_tracker():
     tracker_df = get_dataframe_from_sheet(tracker_ws)
  
     if not tracker_df.empty:
-        st.dataframe(tracker_df, use_container_width=True)
+        if st.session_state.user_name in ADMIN_NAMES:
+            st.dataframe(tracker_df, use_container_width=True)
+        elif st.session_state.user_name in MANAGER_NAMES:
+            tracker_df = tracker_df[tracker_df[""]]
  
         # Initialize session state for editing an issue
         if 'editing_tracker_issue_id' not in st.session_state:
