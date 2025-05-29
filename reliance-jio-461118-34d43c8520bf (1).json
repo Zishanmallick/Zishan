@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "reliance-jio-461118",
+  "private_key_id": "34d43c8520bf03de2edf332e6cd0ce0a73f71878",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCuOnVT+AxZbbY7\nWQJ8Ufd76g01+Sgm81UJpDFCGNiBX3v2qu7NLCRIQev5pHWSv8MzFf4q77bSIhdB\nnad6dEe3AMBkyTlZ9DMhqU2IwRkK85/l5YroElY6/RnNqXIaVlWa90AMM5iLmcNh\nxdaqqp4JUBkgfXN+xu8N6RzMJnIGtmzEuuOwtXnAoASTiiFneiSsXffoykGeg9Fi\njyMliQ0Bg7KGJZZVmdcu/rsJcl5dL4zohoNv0NqLrYdpLx8Od16as3K+5EZYK1sc\nDcCLWTKWXJ27/bJdSO1V/n+YPlTCS+470XcWyU7PvmTp+D7HI9fF/c46EVChsLuG\nrt+yxlFFAgMBAAECgf9biVsbQrc6ROn5REqKBoaAE/fc44q07CNBbYJzt5oIXqJC\ndowAP7DQRdI01rLu5tEnheaDqG3k+QQ+9RWIwI7tFvf9+7qmCCbVCJ4zuz/tARKB\nNphEVV34oAFujBfmvnU7dauwvWrn7WE5fTfLctiVDAAnkcGcWeg+5rq6h3hhDZdX\noO6clG9hkVhsAe3DJyqYN0svMHa/v570nFMhF9TBD2GTx1Pl1B4L0I49zPGUiuoa\nDXKRKNOiIZfGA9VL0+Rh6VXYkcuvFV/x549Ziw26xh2AEqbkLhyr2+GLEJZnTFWl\nCYlyidhL0765BTu6KBLqgVe4hHxz19/0EGcUA98CgYEA8CMuwmIIhO7jarf4qtQa\n0BECX1NnVijyQMzRlqGyxktlYFN1+tzHPtMymjpROE84hM+SGd6yaK24SU6dEpCP\nE1iQrIxQ/utOOwfO7ISN/Gv6Syw/WpFcgmYqedl9LtBZ8NriyFgdOYjHkIJ9UiO6\n96XgbdYJgU3sPboSUDmTO/cCgYEAuby6PWZx3RoO9yQs3r7+ZUQHHBqnKHvTek7g\nOjbobvjxVb5HGqkPeTEZ+LtrBuBPjBrrwOSpl2Bq0ctgW9cO9EGO2bFUMvUu24En\n+o+jbNfqtQN9Vum+uyj75J9z0FrYywx6O58foXzh0ICrixis0qn06fP/zXscX7uZ\nBx0LNaMCgYA9XRA21exNY+ozPB3MMXVElAQiLeLrLn1xN6WbM2jGqT+XlNxCJaa4\nlCmLJbnZhMzxi0VPXQwEGdhMy0zyEISvMeOOZDDSY3jTNtSWtey+gy0rhnwN/bVB\nETBrgLsvekhxds2a2oFlUWGFuQKjOcQuQnIOPzKgmzPyNhk17PCF0wKBgCm6oQ0S\naxqFtD8KPZp9xqHxurcxtcR+rXCZL/9kPqxP+ciNy2PN/8/2nCMp2E3fL4AGvFjG\nBuQfoWApFSkNFCsEX5fBI22fcDuYtOayRsE5cV3hvtM8CMH73zvqJxb0kihsUTn7\n8htR91nkzqWdkZZy4Ld/PkVoF2PavfK/L7mJAoGBAOj+TJ+WFU8yVcUT99NEARo+\nw8SkKsT1Gg70p7QNU+Zk5TdN8th9pXABIcP7bz5/nOK4hpMZqAMG0Cw4V/b1WqfP\n3GaPtqiAambeFSAkcglcoFRXddIzpabUTYtC3lCLCviHphSoGw0yd7r0J8ZyC94t\nrG2bMlkZPGQZWXyUd0EO\n-----END PRIVATE KEY-----\n",
+  "client_email": "reliance-jio-intern-portal@reliance-jio-461118.iam.gserviceaccount.com",
+  "client_id": "116557122475032608957",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/reliance-jio-intern-portal%40reliance-jio-461118.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
