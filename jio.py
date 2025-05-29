@@ -10,8 +10,6 @@ import os
 st.set_page_config(page_title="Reliance Intern & Policy Issue Portal", layout="wide")
 st.title("🚀 Reliance Intern & Policy Issue Portal")
 
-st.write(*os.environ.keys(), sep="\n")
- 
 # Add the logo here, just below the title
 # The width is set to 200px for a reasonable size, adjust as needed.
 st.image("https://raw.githubusercontent.com/Zishanmallick/Zishan/main/L.1.jpg", width=200)
