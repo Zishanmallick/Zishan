@@ -216,7 +216,7 @@ def display_blog_board():
         return
  
     blogs_df = get_dataframe_from_sheet(blog_ws)
-    
+ 
     # Initialize session state for editing if not present
     if 'edit_blog_idx' not in st.session_state:
         st.session_state.edit_blog_idx = None
@@ -237,7 +237,7 @@ def display_blog_board():
             is_editing_this_post = (st.session_state.edit_blog_idx == idx)
  
             post_time = blog.get(BLOG_COLUMNS["timestamp"], 'Unknown')
-            
+ 
             st.markdown(f"### 📝 {blog[BLOG_COLUMNS['title']]}\n**By:** {blog[BLOG_COLUMNS['author']]} &nbsp;&nbsp; ⏱ {post_time}")
             st.markdown(f"> {blog[BLOG_COLUMNS['content']]}")
  
@@ -261,7 +261,7 @@ def display_blog_board():
         with st.form("edit_blog_form"):
             edited_title = st.text_input("Title", value=st.session_state.edit_blog_title, key="edited_blog_title")
             edited_content = st.text_area("Content", value=st.session_state.edit_blog_content, key="edited_blog_content")
-            
+ 
             col1, col2 = st.columns(2)
             with col1:
                 submit_edit = st.form_submit_button("Save Changes")
@@ -280,7 +280,7 @@ def display_blog_board():
                         return
  
                     original_blog_row = blogs_df.iloc[st.session_state.edit_blog_idx]
-                    
+ 
                     # Construct the updated row data in the exact order of your Google Sheet columns
                     # Based on BLOG_COLUMNS mapping: author, title, content, time
                     updated_blog_values = [
@@ -289,7 +289,7 @@ def display_blog_board():
                         edited_content,
                         original_blog_row[BLOG_COLUMNS["timestamp"]]
                     ]
-                    
+ 
                     # gspread uses 1-based indexing for rows. Add 2 (1 for header, 1 for 0-based index)
                     row_in_sheet = st.session_state.edit_blog_idx + 2
                     if blog_ws and update_worksheet_row(blog_ws, row_in_sheet, updated_blog_values):
@@ -406,7 +406,7 @@ def update_tracker_with_responses(log_ws):
             row_idx = match.index[0]
             # Ensure current_issue_id is converted to string to prevent JSON serialization errors
             current_issue_id = str(tracker_df.at[row_idx, TRACKER_COLUMNS["id"]])
-            
+ 
             changes_made_to_row = False
             for resp_col, tracker_col in response_to_tracker_map.items():
                 if tracker_col in tracker_df.columns and resp_col in resp:
@@ -426,7 +426,7 @@ def update_tracker_with_responses(log_ws):
                             str(new_value) if pd.notna(new_value) else "",
                             current_issue_id
                         ])
-            
+ 
             if changes_made_to_row:
                 tracker_df.at[row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 tracker_df.at[row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name
@@ -470,7 +470,7 @@ def display_issue_tracker():
             st.session_state.editing_tracker_data = {}
  
         st.subheader("Update Existing Issue")
-        
+ 
         # Create a list of issue titles for the selectbox
         issue_titles = ["Select an Issue to Edit"] + tracker_df[TRACKER_COLUMNS["issue_title"]].tolist()
         selected_issue_title = st.selectbox(
@@ -482,7 +482,7 @@ def display_issue_tracker():
         if selected_issue_title != "Select an Issue to Edit":
             # Find the selected row in the DataFrame
             selected_row = tracker_df[tracker_df[TRACKER_COLUMNS["issue_title"]] == selected_issue_title].iloc[0]
-            
+ 
             # Pre-fill session state for the form
             st.session_state.editing_tracker_issue_id = selected_row[TRACKER_COLUMNS["id"]]
             st.session_state.editing_tracker_data = selected_row.to_dict()
@@ -495,13 +495,13 @@ def display_issue_tracker():
                 st.text_input("Business Vertical", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["business_vertical"], ""), disabled=True)
                 st.text_input("Team", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["team"], ""), disabled=True)
                 st.text_input("Contact", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["contact"], ""), disabled=True)
-                
+ 
                 # Editable fields
                 updated_email_phone = st.text_input("Email/Phone", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["email_phone"], ""), key="edit_email_phone")
                 updated_description = st.text_area("Description", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["description"], ""), key="edit_description")
                 updated_issue_type = st.text_input("Issue Type", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["issue_type"], ""), key="edit_issue_type")
                 updated_gov_body = st.text_input("Gov Body", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["gov_body"], ""), key="edit_gov_body")
-                
+ 
                 # Define status options
                 status_options = ["Open", "In Progress", "Resolved", "Closed"]
                 current_status_value = st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["status"], "Open")
@@ -521,7 +521,7 @@ def display_issue_tracker():
                 except ValueError:
                     priority_index = 0 # Default to "Low" if current priority is not in options
                 updated_priority = st.selectbox("Priority", options=priority_options, index=priority_index, key="edit_priority")
-                
+ 
                 updated_resolution = st.text_area("Resolution", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["resolution"], ""), key="edit_resolution")
                 updated_file = st.text_input("File", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["file"], ""), key="edit_file")
                 updated_date = st.text_input("Date", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["date"], ""), key="edit_date")
@@ -537,7 +537,7 @@ def display_issue_tracker():
                 if save_changes:
                     # Find the original row index in the DataFrame
                     original_row_idx = tracker_df[tracker_df[TRACKER_COLUMNS["id"]] == st.session_state.editing_tracker_issue_id].index[0]
-                    
+ 
                     changes_made = {}
                     # Compare and update fields, logging changes
                     fields_to_update = {
@@ -559,7 +559,7 @@ def display_issue_tracker():
                         if str(current_value).strip() != str(new_value).strip():
                             tracker_df.at[original_row_idx, col_name] = new_value
                             changes_made[col_name] = {"old": current_value, "new": new_value}
-                            
+ 
                             # Log the change
                             append_row_to_sheet(log_ws, [
                                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -573,7 +573,7 @@ def display_issue_tracker():
                     if changes_made:
                         tracker_df.at[original_row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         tracker_df.at[original_row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name
-                        
+ 
                         if update_entire_worksheet(tracker_ws, tracker_df):
                             st.success("Issue updated successfully!")
                             st.session_state.editing_tracker_issue_id = None
@@ -681,7 +681,7 @@ def main():
         tabs = ["Tasks", "Intern Profiles"]
         # Blog Board is now visible to all logged-in users (Admins, Chairman, and other Interns)
         tabs.insert(1, "Blog Board")
-        
+ 
         # Issue Tracker remains exclusive to Admin/Chairman
         if st.session_state.is_admin or st.session_state.user_name == "Chairman":
             tabs.append("Issue Tracker")
