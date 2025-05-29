@@ -3,11 +3,14 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
- 
+import os
+
 # --- Streamlit Page Configuration (MUST BE FIRST STREAMLIT COMMANDS) ---
 # This ensures set_page_config is called only once at the very beginning of the script execution.
 st.set_page_config(page_title="Reliance Intern & Policy Issue Portal", layout="wide")
 st.title("🚀 Reliance Intern & Policy Issue Portal")
+
+st.write(*os.environ.keys(), sep="\n")
  
 # Add the logo here, just below the title
 # The width is set to 200px for a reasonable size, adjust as needed.
