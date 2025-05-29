@@ -105,22 +105,18 @@ LOG_COLUMNS = {
  
 # --- Google Sheets Setup ---
 # Initialize the Google Sheets client once and cache it for efficiency.
-@st.cache_resource
 def init_sheets_client():
     """Initializes the Google Sheets client and caches it."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds_dict = st.secrets["google_sheets"]
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds_dict = st.secrets["google_sheets"]
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
         client = gspread.authorize(creds)
-        return gspread.authorize(creds)
+        return client
     except Exception as e:
-        st.error(f"Failed to initialize Google Sheets client. Please ensure '{GOOGLE_CREDS_FILE}' is correct and has necessary permissions: {e}")
-        st.stop() # Stop the app if client cannot be initialized, as it's a critical dependency
+        st.error("❌ Failed to initialize Google Sheets client. Please check your credentials.")
+        st.error(f"Error: {e}")
+        st.stop()
  
 client = init_sheets_client()
  
