@@ -6,696 +6,698 @@ from datetime import datetime
 
 # --- Streamlit Page Configuration (MUST BE FIRST STREAMLIT COMMANDS) ---
 # This ensures set_page_config is called only once at the very beginning of the script execution.
-st.set_page_config(page_title="Reliance Intern & Policy Issue Portal", layout="wide")
+st.set_page_config(page_title="Reliance Intern & Policy Issue Portal", layout="wide") # [cite: 2]
 st.title("🚀 Reliance Intern & Policy Issue Portal")
 
 # Add the logo here, just below the title
 # The width is set to 200px for a reasonable size, adjust as needed.
-st.image("https://raw.githubusercontent.com/Zishanmallick/Zishan/main/L.1.jpg", width=200)
+st.image("https://raw.githubusercontent.com/Zishanmallick/Zishan/main/L.1.jpg", width=200) # [cite: 3]
 
 # --- Configuration ---
 # Centralized configuration for Google Sheet IDs and names.
-SHEET_CONFIG = {
-    "tracker": {"id": "1tq_g6q7tnS2OQjhehSu4lieR3wTOJ-_s0RfItq0XzWI", "name": "Sheet1"},
-    "response": {"id": "1pdfnjg9gzRSpecLyw6kXzVmuPCj1ozq_DJGstQHEzdY", "name": "Form Responses 1"},
-    "log": {"id": "1K7myr-bi4ry3z_tQyGg25nRJrn9QrGupeP3Tem1z4kQ", "name": "Sheet1"},
-    "blog": {"id": "1uyURjMiA8C1A7Yb5ZVAtUurb7ChCIKwKN7XeJhDP0Cg", "name": "Sheet1"},
+SHEET_CONFIG = { # [cite: 4]
+    "tracker": {"id": "1tq_g6q7tnS2OQjhehSu4lieR3wTOJ-_s0RfItq0XzWI", "name": "Sheet1"}, # [cite: 4]
+    "response": {"id": "1pdfnjg9gzRSpecLyw6kXzVmuPCj1ozq_DJGstQHEzdY", "name": "Form Responses 1"}, # [cite: 4]
+    "log": {"id": "1K7myr-bi4ry3z_tQyGg25nRJrn9QrGupeP3Tem1z4kQ", "name": "Sheet1"}, # [cite: 4]
+    "blog": {"id": "1uyURjMiA8C1A7Yb5ZVAtUurb7ChCIKwKN7XeJhDP0Cg", "name": "Sheet1"}, # [cite: 4]
 }
-GOOGLE_CREDS_FILE = "reliance-jio-461118-34d43c8520bf.json"
-ADMIN_PASSWORD = "admin@jio"
-USER_PASSWORD = "jio2025" # General user password
-INTERN_NAMES = [
-    "Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager",
-    "Jio Financial Manager", "Jio Legal Services",
-    "Zishan Mallick", "Satvik Ahlawat", "Trapti Singh", "Ujjwal Akshith Mondreti",
-    "Aanchal Verma", "Rohit Mishra"
+GOOGLE_CREDS_FILE = "reliance-jio-461118-34d43c8520bf.json" # [cite: 4]
+ADMIN_PASSWORD = "admin@jio" # [cite: 4]
+USER_PASSWORD = "jio2025" # General user password # [cite: 4]
+INTERN_NAMES = [ # [cite: 4]
+    "Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager", # [cite: 4]
+    "Jio Financial Manager", "Jio Legal Services", # [cite: 4]
+    "Zishan Mallick", "Satvik Ahlawat", "Trapti Singh", "Ujjwal Akshith Mondreti", # [cite: 4]
+    "Aanchal Verma", "Rohit Mishra" # [cite: 4]
 ]
-TASKS = {
-    "Week 1": "Intro to Jio Platforms + Submit project preference form",
-    "Week 2": "Research Jio's AI Strategy and write 500-word report",
-    "Week 3": "Group presentation on Jio Digital Transformation"
+TASKS = { # [cite: 4]
+    "Week 1": "Intro to Jio Platforms + Submit project preference form", # [cite: 4, 5]
+    "Week 2": "Research Jio's AI Strategy and write 500-word report", # [cite: 4]
+    "Week 3": "Group presentation on Jio Digital Transformation" # [cite: 4]
 }
-CURRENT_WEEK = "Week 3"
-INTERN_PROFILES = [
-    {"Name": "Zishan Mallick", "Department": "Business Analytics", "LinkedIn": "https://linkedin.com/in/zishan-mallick-5809a6181"},
-    {"Name": "Satvik Ahlawat", "Department": "Marketing", "LinkedIn": "https://linkedin.com/in/satvik-ahlawat"},
-    {"Name": "Trapti Singh", "Department": "Strategy", "LinkedIn": "https://linkedin.com/in/trapti-singh"},
-    {"Name": "Ujjwal Akshith Mondreti", "Department": "Legal", "LinkedIn": "https://linkedin.com/in/ujjwal-mondreti"},
-    {"Name": "Aanchal Verma", "Department": "Finance", "LinkedIn": "https://linkedin.com/in/aanchal-verma"},
-    {"Name": "Rohit Mishra", "Department": "Business Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra"}
+CURRENT_WEEK = "Week 3" # [cite: 4]
+INTERN_PROFILES = [ # [cite: 4]
+    {"Name": "Zishan Mallick", "Department": "Business Analytics", "LinkedIn": "https://linkedin.com/in/zishan-mallick-5809a6181"}, # [cite: 4]
+    {"Name": "Satvik Ahlawat", "Department": "Marketing", "LinkedIn": "https://linkedin.com/in/satvik-ahlawat"}, # [cite: 4]
+    {"Name": "Trapti Singh", "Department": "Strategy", "LinkedIn": "https://linkedin.com/in/trapti-singh"}, # [cite: 4]
+    {"Name": "Ujjwal Akshith Mondreti", "Department": "Legal", "LinkedIn": "https://linkedin.com/in/ujjwal-mondreti"}, # [cite: 4]
+    {"Name": "Aanchal Verma", "Department": "Finance", "LinkedIn": "https://linkedin.com/in/aanchal-verma"}, # [cite: 4]
+    {"Name": "Rohit Mishra", "Department": "Business Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra"} # [cite: 4]
 ]
 
-# --- Column Names Mappings (for robust access) ---
-# These dictionaries map a consistent internal key to the actual column name in the Google Sheet.
-# .strip() is applied when reading from sheets to handle potential leading/trailing spaces,
-# so the keys here should match the stripped column names.
-TRACKER_COLUMNS = {
-    "id": "id",
-    "business_vertical": "Business Vertical",
-    "team": "Team",
-    "contact": "Contact",
-    "email_phone": "Email/Phone",
-    "issue_title": "Issue Title",
-    "description": "Description",
-    "issue_type": "Issue Type",
-    "gov_body": "Gov Body",
-    "priority": "Priority",
-    "resolution": "Resolution",
-    "file": "File",
-    "date": "Date",
-    "status": "Status",
-    "response": "Response",
-    "updated_by": "Updated By",
-    "last_updated": "Last Updated"
+# --- Column Names Mappings (for robust access) --- # [cite: 6]
+# These dictionaries map a consistent internal key to the actual column name in the Google Sheet. [cite: 6, 7]
+# .strip() is applied when reading from sheets to handle potential leading/trailing spaces, # [cite: 7]
+# so the keys here should match the stripped column names. [cite: 7]
+TRACKER_COLUMNS = { # [cite: 8]
+    "id": "id", # [cite: 8]
+    "business_vertical": "Business Vertical", # [cite: 8]
+    "team": "Team", # [cite: 8]
+    "contact": "Contact", # [cite: 8]
+    "email_phone": "Email/Phone", # [cite: 8]
+    "issue_title": "Issue Title", # [cite: 8]
+    "description": "Description", # [cite: 8]
+    "issue_type": "Issue Type", # [cite: 8]
+    "gov_body": "Gov Body", # [cite: 8]
+    "priority": "Priority", # [cite: 8]
+    "resolution": "Resolution", # [cite: 8]
+    "file": "File", # [cite: 8]
+    "date": "Date", # [cite: 8]
+    "status": "Status", # [cite: 8]
+    "response": "Response", # [cite: 8]
+    "updated_by": "Updated By", # [cite: 8]
+    "last_updated": "Last Updated" # [cite: 8]
 }
 
-RESPONSE_COLUMNS = {
-    "timestamp": "Timestamp",
-    "business_vertical": "Business Vertical",
-    "department_name": "Department Name",
-    "contact_person": "Contact Person Name & Designation",
-    "email_phone": "Email ID / Phone Number",
-    "issue_title": "Title of Issue",
-    "description": "Detailed Description of the Issue",
-    "issue_type": "Type of Issues",
-    "gov_body": "Relevant Government Body",
-    "priority_level": "Priority Level",
-    "impact_unresolved": "Impact if Unresolved",
-    "proposed_resolution": "Proposed Resolution",
-    "file": "Attach Supporting Documents",
-    "date_submission": "Date of Submission"
+RESPONSE_COLUMNS = { # [cite: 8]
+    "timestamp": "Timestamp", # [cite: 8, 9]
+    "business_vertical": "Business Vertical", # [cite: 8]
+    "department_name": "Department Name", # [cite: 8]
+    "contact_person": "Contact Person Name & Designation", # [cite: 8]
+    "email_phone": "Email ID / Phone Number", # [cite: 8]
+    "issue_title": "Title of Issue", # [cite: 8]
+    "description": "Detailed Description of the Issue", # [cite: 8]
+    "issue_type": "Type of Issues", # [cite: 8]
+    "gov_body": "Relevant Government Body", # [cite: 8]
+    "priority_level": "Priority Level", # [cite: 8]
+    "impact_unresolved": "Impact if Unresolved", # [cite: 8]
+    "proposed_resolution": "Proposed Resolution", # [cite: 8]
+    "file": "Attach Supporting Documents", # [cite: 8]
+    "date_submission": "Date of Submission" # [cite: 8]
 }
 
-BLOG_COLUMNS = {
-    "author": "author",
-    "title": "title",
-    "content": "content",
-    "timestamp": "time" # Assuming 'time' is the actual column name in the sheet
+BLOG_COLUMNS = { # [cite: 8]
+    "author": "author", # [cite: 8, 10]
+    "title": "title", # [cite: 8, 10]
+    "content": "content", # [cite: 8, 10]
+    "timestamp": "time" # Assuming 'time' is the actual column name in the sheet # [cite: 8, 10]
 }
 
-LOG_COLUMNS = {
-    "issue_id": "Issue ID",
-    "field": "Field",
-    "old_value": "Old Value",
-    "new_value": "New Value",
-    "updated_by": "Updated By",
-    "timestamp": "Timestamp"
+LOG_COLUMNS = { # [cite: 8]
+    "issue_id": "Issue ID", # [cite: 8]
+    "field": "Field", # [cite: 8]
+    "old_value": "Old Value", # [cite: 8]
+    "new_value": "New Value", # [cite: 8]
+    "updated_by": "Updated By", # [cite: 8]
+    "timestamp": "Timestamp" # [cite: 8]
 }
 
 
 # --- Google Sheets Setup ---
-# Initialize the Google Sheets client once and cache it for efficiency.
-@st.cache_resource
-def init_sheets_client():
-    """Initializes the Google Sheets client and caches it."""
-    try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_FILE, scope)
-        return gspread.authorize(creds)
-    except Exception as e:
-        st.error(f"Failed to initialize Google Sheets client. Please ensure '{GOOGLE_CREDS_FILE}' is correct and has necessary permissions: {e}")
-        st.stop() # Stop the app if client cannot be initialized, as it's a critical dependency
+# Initialize the Google Sheets client once and cache it for efficiency. [cite: 10]
+@st.cache_resource # [cite: 11]
+def init_sheets_client(): # [cite: 11]
+    """Initializes the Google Sheets client and caches it.""" # [cite: 11]
+    try: # [cite: 11]
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"] # [cite: 11]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_FILE, scope) # [cite: 11]
+        return gspread.authorize(creds) # [cite: 11]
+    except Exception as e: # [cite: 11]
+        st.error(f"Failed to initialize Google Sheets client. Please ensure '{GOOGLE_CREDS_FILE}' is correct and has necessary permissions: {e}") # [cite: 11]
+        st.stop() # Stop the app if client cannot be initialized, as it's a critical dependency # [cite: 11]
 
 
-client = init_sheets_client()
+client = init_sheets_client() # [cite: 12]
 
 
-def get_worksheet(client, sheet_id, worksheet_name):
-    """Retrieves a Google Sheet worksheet."""
-    try:
-        sheet = client.open_by_key(sheet_id)
-        return sheet.worksheet(worksheet_name)
-    except gspread.exceptions.SpreadsheetNotFound:
-        st.error(f"Spreadsheet with ID '{sheet_id}' not found. Please verify the ID in SHEET_CONFIG.")
-        return None
-    except gspread.exceptions.WorksheetNotFound:
-        st.error(f"Worksheet '{worksheet_name}' not found in spreadsheet '{sheet_id}'. Please verify the worksheet name in SHEET_CONFIG.")
-        return None
-    except Exception as e:
-        st.error(f"An unexpected error occurred while accessing worksheet: {e}")
-        return None
+def get_worksheet(client, sheet_id, worksheet_name): # [cite: 12]
+    """Retrieves a Google Sheet worksheet.""" # [cite: 12]
+    try: # [cite: 12]
+        sheet = client.open_by_key(sheet_id) # [cite: 12]
+        return sheet.worksheet(worksheet_name) # [cite: 12]
+    except gspread.exceptions.SpreadsheetNotFound: # [cite: 12]
+        st.error(f"Spreadsheet with ID '{sheet_id}' not found. Please verify the ID in SHEET_CONFIG.") # [cite: 12]
+        return None # [cite: 12]
+    except gspread.exceptions.WorksheetNotFound: # [cite: 12]
+        st.error(f"Worksheet '{worksheet_name}' not found in spreadsheet '{sheet_id}'. Please verify the worksheet name in SHEET_CONFIG.") # [cite: 12, 13]
+        return None # [cite: 13]
+    except Exception as e: # [cite: 13]
+        st.error(f"An unexpected error occurred while accessing worksheet: {e}") # [cite: 13]
+        return None # [cite: 13]
 
 
-def get_dataframe_from_sheet(worksheet):
-    """Retrieves all records from a worksheet as a Pandas DataFrame, cleaning column names."""
-    try:
-        data = worksheet.get_all_records()
-        if not data: # Handle empty sheet case gracefully
-            return pd.DataFrame()
-        df = pd.DataFrame(data)
-        # Strip whitespace from column names to ensure robust matching
-        df.columns = df.columns.str.strip()
-        return df
-    except Exception as e:
-        st.error(f"Error reading data from worksheet '{worksheet.title}': {e}")
-        return pd.DataFrame()  # Return empty DataFrame to avoid further errors
+def get_dataframe_from_sheet(worksheet): # [cite: 13]
+    """Retrieves all records from a worksheet as a Pandas DataFrame, cleaning column names.""" # [cite: 13]
+    try: # [cite: 13]
+        data = worksheet.get_all_records() # [cite: 13]
+        if not data: # Handle empty sheet case gracefully # [cite: 13]
+            return pd.DataFrame() # [cite: 14]
+        df = pd.DataFrame(data) # [cite: 14]
+        # Strip whitespace from column names to ensure robust matching # [cite: 14]
+        df.columns = df.columns.str.strip() # [cite: 14]
+        return df # [cite: 14]
+    except Exception as e: # [cite: 14]
+        st.error(f"Error reading data from worksheet '{worksheet.title}': {e}") # [cite: 14]
+        return pd.DataFrame()  # Return empty DataFrame to avoid further errors # [cite: 14]
 
 
-def append_row_to_sheet(worksheet, row_data):
-    """Appends a row to a Google Sheet worksheet."""
-    try:
-        worksheet.append_row(row_data)
-        return True
-    except Exception as e:
-        st.error(f"Error appending row to worksheet '{worksheet.title}': {e}")
-        return False
+def append_row_to_sheet(worksheet, row_data): # [cite: 14]
+    """Appends a row to a Google Sheet worksheet.""" # [cite: 14, 15]
+    try: # [cite: 15]
+        worksheet.append_row(row_data) # [cite: 15]
+        return True # [cite: 15]
+    except Exception as e: # [cite: 15]
+        st.error(f"Error appending row to worksheet '{worksheet.title}': {e}") # [cite: 15]
+        return False # [cite: 15]
 
 
-def update_worksheet_row(worksheet, row_index, row_data):
-    """Updates a specific row in a Google Sheet worksheet. row_index is 1-based (Google Sheets API). row_data is a list of values for the row. """
-    try:
-        # Determine the A1 notation range for the row to update
-        # len(row_data) gives the number of columns to update
-        range_to_update = f'A{row_index}:{gspread.utils.rowcol_to_a1(row_index, len(row_data))}'
-        worksheet.update(range_to_update, [row_data])
-        return True
-    except Exception as e:
-        st.error(f"Error updating row {row_index} in worksheet '{worksheet.title}': {e}")
-        return False
+def update_worksheet_row(worksheet, row_index, row_data): # [cite: 15]
+    """Updates a specific row in a Google Sheet worksheet. [cite: 15, 16]
+    row_index is 1-based (Google Sheets API). row_data is a list of values for the row. [cite: 16]
+    """ # [cite: 17]
+    try: # [cite: 17]
+        # Determine the A1 notation range for the row to update # [cite: 17]
+        # len(row_data) gives the number of columns to update # [cite: 17]
+        range_to_update = f'A{row_index}:{gspread.utils.rowcol_to_a1(row_index, len(row_data))}' # [cite: 17]
+        worksheet.update(range_to_update, [row_data]) # [cite: 17]
+        return True # [cite: 17]
+    except Exception as e: # [cite: 17]
+        st.error(f"Error updating row {row_index} in worksheet '{worksheet.title}': {e}") # [cite: 17]
+        return False # [cite: 17]
 
-def update_entire_worksheet(worksheet, df):
-    """Updates the entire worksheet with the given DataFrame, including headers."""
-    try:
-        # Convert DataFrame to a list of lists, including the header
-        data_to_write = [df.columns.tolist()] + df.values.tolist()
-        worksheet.update(data_to_write)
-        return True
-    except Exception as e:
-        st.error(f"Error updating entire worksheet '{worksheet.title}': {e}")
-        return False
+def update_entire_worksheet(worksheet, df): # [cite: 17, 18]
+    """Updates the entire worksheet with the given DataFrame, including headers.""" # [cite: 18]
+    try: # [cite: 18]
+        # Convert DataFrame to a list of lists, including the header # [cite: 18]
+        data_to_write = [df.columns.tolist()] + df.values.tolist() # [cite: 18]
+        worksheet.update(data_to_write) # [cite: 18]
+        return True # [cite: 18]
+    except Exception as e: # [cite: 18]
+        st.error(f"Error updating entire worksheet '{worksheet.title}': {e}") # [cite: 18]
+        return False # [cite: 18]
 
 # --- Streamlit UI Functions ---
-def display_tasks():
-    """Displays the weekly tasks and submission form."""
-    st.header("Weekly Tasks & Submissions")
-    st.info("Upload and track your weekly tasks here.")
-    st.success(f"🗓️ **Current Task:** {CURRENT_WEEK} - {TASKS[CURRENT_WEEK]}")
+def display_tasks(): # [cite: 18]
+    """Displays the weekly tasks and submission form.""" # [cite: 19]
+    st.header("Weekly Tasks & Submissions") # [cite: 19]
+    st.info("Upload and track your weekly tasks here.") # [cite: 19]
+    st.success(f"🗓️ **Current Task:** {CURRENT_WEEK} - {TASKS[CURRENT_WEEK]}") # [cite: 19]
 
-    for week, desc in TASKS.items():
-        st.write(f"**{week}:** {desc}")
+    for week, desc in TASKS.items(): # [cite: 19]
+        st.write(f"**{week}:** {desc}") # [cite: 19]
 
-    st.subheader("Submit Your Work")
-    with st.form("task_form"):
-        selected_week = st.selectbox("Select Week", list(TASKS.keys()))
-        uploaded_file = st.file_uploader("Upload File", type=["pdf", "docx"])
-        submitted = st.form_submit_button("Submit")
-        if submitted and uploaded_file:
-            st.success(f"✅ File uploaded for {selected_week}")
-        elif submitted and not uploaded_file:
-            st.warning("Please upload a file to submit.")
+    st.subheader("Submit Your Work") # [cite: 19]
+    with st.form("task_form"): # [cite: 19]
+        selected_week = st.selectbox("Select Week", list(TASKS.keys())) # [cite: 19]
+        uploaded_file = st.file_uploader("Upload File", type=["pdf", "docx"]) # [cite: 19]
+        submitted = st.form_submit_button("Submit") # [cite: 19]
+        if submitted and uploaded_file: # [cite: 20]
+            st.success(f"✅ File uploaded for {selected_week}") # [cite: 20]
+        elif submitted and not uploaded_file: # [cite: 20]
+            st.warning("Please upload a file to submit.") # [cite: 20]
 
 
-def display_blog_board():
-    """Displays the blog board with viewing, posting, and editing functionality."""
-    st.header("Blog Board")
-    st.info("View and share updates and insights. Only Admins & Chairman can post and edit.")
+def display_blog_board(): # [cite: 20]
+    """Displays the blog board with viewing, posting, and editing functionality.""" # [cite: 20]
+    st.header("Blog Board") # [cite: 20]
+    st.info("View and share updates and insights. Only Admins & Chairman can post and edit.") # [cite: 20, 21]
 
-    blog_ws = get_worksheet(client, SHEET_CONFIG["blog"]["id"], SHEET_CONFIG["blog"]["name"])
-    if blog_ws is None: # If worksheet could not be retrieved, stop here.
-        return
+    blog_ws = get_worksheet(client, SHEET_CONFIG["blog"]["id"], SHEET_CONFIG["blog"]["name"]) # [cite: 21]
+    if blog_ws is None: # If worksheet could not be retrieved, stop here. # [cite: 21]
+        return # [cite: 21]
 
-    blogs_df = get_dataframe_from_sheet(blog_ws)
+    blogs_df = get_dataframe_from_sheet(blog_ws) # [cite: 21]
 
-    # Initialize session state for editing if not present
-    if 'edit_blog_idx' not in st.session_state:
-        st.session_state.edit_blog_idx = None
-    if 'edit_blog_title' not in st.session_state:
-        st.session_state.edit_blog_title = ""
-    if 'edit_blog_content' not in st.session_state:
-        st.session_state.edit_blog_content = ""
+    # Initialize session state for editing if not present # [cite: 21]
+    if 'edit_blog_idx' not in st.session_state: # [cite: 21]
+        st.session_state.edit_blog_idx = None # [cite: 21]
+    if 'edit_blog_title' not in st.session_state: # [cite: 21]
+        st.session_state.edit_blog_title = "" # [cite: 21]
+    if 'edit_blog_content' not in st.session_state: # [cite: 21, 22]
+        st.session_state.edit_blog_content = "" # [cite: 22]
 
-    if not blogs_df.empty:
-        # Check if all expected blog columns exist in the DataFrame
-        expected_cols = [BLOG_COLUMNS["title"], BLOG_COLUMNS["author"], BLOG_COLUMNS["timestamp"], BLOG_COLUMNS["content"]]
-        if not all(col in blogs_df.columns for col in expected_cols):
-            st.warning("Blog sheet columns do not match expected format. Please check sheet configuration and actual column headers.")
-            return # Exit function if columns are incorrect
+    if not blogs_df.empty: # [cite: 22]
+        # Check if all expected blog columns exist in the DataFrame # [cite: 22]
+        expected_cols = [BLOG_COLUMNS["title"], BLOG_COLUMNS["author"], BLOG_COLUMNS["timestamp"], BLOG_COLUMNS["content"]] # [cite: 22]
+        if not all(col in blogs_df.columns for col in expected_cols): # [cite: 22]
+            st.warning("Blog sheet columns do not match expected format. Please check sheet configuration and actual column headers.") # [cite: 22, 23]
+            return # Exit function if columns are incorrect # [cite: 23]
 
-        for idx, blog in blogs_df.iterrows():
-            # Check if this blog post is currently being edited
-            is_editing_this_post = (st.session_state.edit_blog_idx == idx)
+        for idx, blog in blogs_df.iterrows(): # [cite: 23]
+            # Check if this blog post is currently being edited # [cite: 23]
+            is_editing_this_post = (st.session_state.edit_blog_idx == idx) # [cite: 23]
 
-            post_time = blog.get(BLOG_COLUMNS["timestamp"], 'Unknown')
+            post_time = blog.get(BLOG_COLUMNS["timestamp"], 'Unknown') # [cite: 23]
 
-            st.markdown(f"### 📝 {blog[BLOG_COLUMNS['title']]}\n**By:** {blog[BLOG_COLUMNS['author']]} &nbsp;&nbsp; ⏱ {post_time}")
-            st.markdown(f"> {blog[BLOG_COLUMNS['content']]}")
+            st.markdown(f"### 📝 {blog[BLOG_COLUMNS['title']]}\n**By:** {blog[BLOG_COLUMNS['author']]} &nbsp;&nbsp; ⏱ {post_time}") # [cite: 24]
+            st.markdown(f"> {blog[BLOG_COLUMNS['content']]}") # [cite: 24]
 
-            # Edit button for Admins and Chairman
-            if st.session_state.is_admin or st.session_state.user_name == "Chairman":
-                col1, col2 = st.columns([1, 5])
-                with col1:
-                    # Disable edit button if another post is already being edited
-                    if st.button("Edit Blog", key=f"edit_blog_{idx}", disabled=st.session_state.edit_blog_idx is not None):
-                        st.session_state.edit_blog_idx = idx
-                        st.session_state.edit_blog_title = blog[BLOG_COLUMNS['title']]
-                        st.session_state.edit_blog_content = blog[BLOG_COLUMNS['content']]
-                        st.rerun() # Rerun to show the edit form
-            st.markdown("---")
-    else:
-        st.info("No blog posts available yet.")
+            # Edit button for Admins and Chairman # [cite: 24]
+            if st.session_state.is_admin or st.session_state.user_name == "Chairman": # [cite: 24]
+                col1, col2 = st.columns([1, 5]) # [cite: 24]
+                with col1: # [cite: 24]
+                    # Disable edit button if another post is already being edited # [cite: 25]
+                    if st.button("Edit Blog", key=f"edit_blog_{idx}", disabled=st.session_state.edit_blog_idx is not None): # [cite: 25]
+                        st.session_state.edit_blog_idx = idx # [cite: 25]
+                        st.session_state.edit_blog_title = blog[BLOG_COLUMNS['title']] # [cite: 26]
+                        st.session_state.edit_blog_content = blog[BLOG_COLUMNS['content']] # [cite: 26]
+                        st.rerun() # Rerun to show the edit form # [cite: 26]
+            st.markdown("---") # [cite: 26]
+    else: # [cite: 26]
+        st.info("No blog posts available yet.") # [cite: 26]
 
-    # Edit functionality form (only for Admins and Chairman, and if a post is selected for editing)
-    if (st.session_state.is_admin or st.session_state.user_name == "Chairman") and st.session_state.edit_blog_idx is not None:
-        st.subheader(f"Edit Blog Post (Index: {st.session_state.edit_blog_idx})")
-        with st.form("edit_blog_form"):
-            edited_title = st.text_input("Title", value=st.session_state.edit_blog_title, key="edited_blog_title")
-            edited_content = st.text_area("Content", value=st.session_state.edit_blog_content, key="edited_blog_content")
+    # Edit functionality form (only for Admins and Chairman, and if a post is selected for editing) # [cite: 26, 27]
+    if (st.session_state.is_admin or st.session_state.user_name == "Chairman") and st.session_state.edit_blog_idx is not None: # [cite: 27]
+        st.subheader(f"Edit Blog Post (Index: {st.session_state.edit_blog_idx})") # [cite: 27]
+        with st.form("edit_blog_form"): # [cite: 27]
+            edited_title = st.text_input("Title", value=st.session_state.edit_blog_title, key="edited_blog_title") # [cite: 27]
+            edited_content = st.text_area("Content", value=st.session_state.edit_blog_content, key="edited_blog_content") # [cite: 27]
 
-            col1, col2 = st.columns(2)
-            with col1:
-                submit_edit = st.form_submit_button("Save Changes")
-            with col2:
-                cancel_edit = st.form_submit_button("Cancel Edit")
+            col1, col2 = st.columns(2) # [cite: 27]
+            with col1: # [cite: 28]
+                submit_edit = st.form_submit_button("Save Changes") # [cite: 28]
+            with col2: # [cite: 28]
+                cancel_edit = st.form_submit_button("Cancel Edit") # [cite: 28]
 
-            if submit_edit:
-                if edited_title and edited_content:
-                    # Retrieve the original row to preserve other columns (like author, timestamp)
-                    # Use .iloc to access by integer position if index is not unique or reset
-                    # Assuming blogs_df is still valid from the initial fetch
-                    if blogs_df.empty:
-                        st.error("Cannot save changes: Original blog data not found.")
-                        st.session_state.edit_blog_idx = None
-                        st.rerun()
-                        return
+            if submit_edit: # [cite: 28]
+                if edited_title and edited_content: # [cite: 28]
+                    # Retrieve the original row to preserve other columns (like author, timestamp) # [cite: 29]
+                    # Use .iloc to access by integer position if index is not unique or reset # [cite: 29]
+                    # Assuming blogs_df is still valid from the initial fetch # [cite: 29]
+                    if blogs_df.empty: # [cite: 30]
+                        st.error("Cannot save changes: Original blog data not found.") # [cite: 30]
+                        st.session_state.edit_blog_idx = None # [cite: 30]
+                        st.rerun() # [cite: 30]
+                        return # [cite: 31]
 
-                    original_blog_row = blogs_df.iloc[st.session_state.edit_blog_idx]
+                    original_blog_row = blogs_df.iloc[st.session_state.edit_blog_idx] # [cite: 31]
 
-                    # Construct the updated row data in the exact order of your Google Sheet columns
-                    # Based on BLOG_COLUMNS mapping: author, title, content, time
-                    updated_blog_values = [
-                        original_blog_row[BLOG_COLUMNS["author"]],
-                        edited_title,
-                        edited_content,
-                        original_blog_row[BLOG_COLUMNS["timestamp"]]
+                    # Construct the updated row data in the exact order of your Google Sheet columns # [cite: 31]
+                    # Based on BLOG_COLUMNS mapping: author, title, content, time # [cite: 31]
+                    updated_blog_values = [ # [cite: 32]
+                        original_blog_row[BLOG_COLUMNS["author"]], # [cite: 32]
+                        edited_title, # [cite: 32]
+                        edited_content, # [cite: 32]
+                        original_blog_row[BLOG_COLUMNS["timestamp"]] # [cite: 33]
                     ]
 
-                    # gspread uses 1-based indexing for rows. Add 2 (1 for header, 1 for 0-based index)
-                    row_in_sheet = st.session_state.edit_blog_idx + 2
-                    if blog_ws and update_worksheet_row(blog_ws, row_in_sheet, updated_blog_values):
-                        st.success("Blog post updated successfully!")
-                        st.session_state.edit_blog_idx = None # Clear edit state
-                        st.session_state.edit_blog_title = ""
-                        st.session_state.edit_blog_content = ""
-                        st.rerun() # Rerun to refresh the blog list and clear form
-                else:
-                    st.warning("Please fill in both title and content for the blog post.")
-            elif cancel_edit:
-                st.session_state.edit_blog_idx = None # Clear edit state
-                st.session_state.edit_blog_title = ""
-                st.session_state.edit_blog_content = ""
-                st.rerun() # Rerun to clear form
+                    # gspread uses 1-based indexing for rows. Add 2 (1 for header, 1 for 0-based index) # [cite: 33, 34]
+                    row_in_sheet = st.session_state.edit_blog_idx + 2 # [cite: 34]
+                    if blog_ws and update_worksheet_row(blog_ws, row_in_sheet, updated_blog_values): # [cite: 34]
+                        st.success("Blog post updated successfully!") # [cite: 34]
+                        st.session_state.edit_blog_idx = None # Clear edit state # [cite: 35]
+                        st.session_state.edit_blog_title = "" # [cite: 35]
+                        st.session_state.edit_blog_content = "" # [cite: 35]
+                        st.rerun() # Rerun to refresh the blog list and clear form # [cite: 35, 36]
+                else: # [cite: 36]
+                    st.warning("Please fill in both title and content for the blog post.") # [cite: 36]
+            elif cancel_edit: # [cite: 36]
+                st.session_state.edit_blog_idx = None # Clear edit state # [cite: 36]
+                st.session_state.edit_blog_title = "" # [cite: 36]
+                st.session_state.edit_blog_content = "" # [cite: 37]
+                st.rerun() # Rerun to clear form # [cite: 37]
 
 
-    # Posting functionality (only for Admins and Chairman)
-    if st.session_state.is_admin or st.session_state.user_name == "Chairman":
-        st.subheader("Post a New Blog")
-        st.session_state.temp_blog_title = st.text_input("Title", st.session_state.temp_blog_title, key="new_blog_title_input")
-        st.session_state.temp_blog_content = st.text_area("Content", st.session_state.temp_blog_content, key="new_blog_content_input")
-        if st.button("Post Blog", key="post_new_blog_button"):
-            if st.session_state.temp_blog_title and st.session_state.temp_blog_content:
-                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                # Order of values must match the column order in your Google Sheet: author, title, content, time
-                blog_post_values = [
-                    st.session_state.user_name, # author
-                    st.session_state.temp_blog_title, # title
-                    st.session_state.temp_blog_content, # content
-                    now # time
+    # Posting functionality (only for Admins and Chairman) # [cite: 37]
+    if st.session_state.is_admin or st.session_state.user_name == "Chairman": # [cite: 37]
+        st.subheader("Post a New Blog") # [cite: 37]
+        st.session_state.temp_blog_title = st.text_input("Title", st.session_state.temp_blog_title, key="new_blog_title_input") # [cite: 37]
+        st.session_state.temp_blog_content = st.text_area("Content", st.session_state.temp_blog_content, key="new_blog_content_input") # [cite: 37]
+        if st.button("Post Blog", key="post_new_blog_button"): # [cite: 38]
+            if st.session_state.temp_blog_title and st.session_state.temp_blog_content: # [cite: 38]
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # [cite: 38]
+                # Order of values must match the column order in your Google Sheet: author, title, content, time # [cite: 38]
+                blog_post_values = [ # [cite: 38]
+                    st.session_state.user_name, # author # [cite: 39]
+                    st.session_state.temp_blog_title, # title # [cite: 39]
+                    st.session_state.temp_blog_content, # content # [cite: 39]
+                    now # time # [cite: 39]
                 ]
-                if blog_ws:
-                    if append_row_to_sheet(blog_ws, blog_post_values):
-                        st.success("Blog posted successfully!")
-                        st.session_state.temp_blog_title = ""
-                        st.session_state.temp_blog_content = ""
-                        st.rerun() # Rerun to clear input fields and refresh blog list
-            else:
-                st.warning("Please fill in both title and content for the blog post.")
+                if blog_ws: # [cite: 40]
+                    if append_row_to_sheet(blog_ws, blog_post_values): # [cite: 40]
+                        st.success("Blog posted successfully!") # [cite: 40]
+                        st.session_state.temp_blog_title = "" # [cite: 40]
+                        st.session_state.temp_blog_content = "" # [cite: 41]
+                        st.rerun() # Rerun to clear input fields and refresh blog list # [cite: 41]
+            else: # [cite: 41]
+                st.warning("Please fill in both title and content for the blog post.") # [cite: 41]
 
 
-def display_intern_profiles():
-    """Displays the intern profiles."""
-    st.header("Intern Profiles")
-    df_profiles = pd.DataFrame(INTERN_PROFILES)
-    st.dataframe(df_profiles, use_container_width=True)
+def display_intern_profiles(): # [cite: 41]
+    """Displays the intern profiles.""" # [cite: 41]
+    st.header("Intern Profiles") # [cite: 41]
+    df_profiles = pd.DataFrame(INTERN_PROFILES) # [cite: 41, 42]
+    st.dataframe(df_profiles, use_container_width=True) # [cite: 42]
 
 
-def update_tracker_with_responses(log_ws):
-    """Updates the issue tracker with responses from the response sheet and logs changes."""
-    tracker_ws = get_worksheet(client, SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"])
-    response_ws = get_worksheet(client, SHEET_CONFIG["response"]["id"], SHEET_CONFIG["response"]["name"])
+def update_tracker_with_responses(log_ws): # [cite: 42]
+    """Updates the issue tracker with responses from the response sheet and logs changes.""" # [cite: 42]
+    tracker_ws = get_worksheet(client, SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"]) # [cite: 42]
+    response_ws = get_worksheet(client, SHEET_CONFIG["response"]["id"], SHEET_CONFIG["response"]["name"]) # [cite: 42]
 
-    if log_ws is None or tracker_ws is None or response_ws is None:
-        return # Exit if any required worksheet is not found
+    if log_ws is None or tracker_ws is None or response_ws is None: # [cite: 42]
+        return # Exit if any required worksheet is not found # [cite: 42]
 
-    # Initialize log sheet header if empty
-    if not log_ws.get_all_values():
-        append_row_to_sheet(log_ws, [
-            LOG_COLUMNS["timestamp"],
-            LOG_COLUMNS["updated_by"],
-            LOG_COLUMNS["field"],
-            LOG_COLUMNS["old_value"],
-            LOG_COLUMNS["new_value"],
-            LOG_COLUMNS["issue_id"]
+    # Initialize log sheet header if empty # [cite: 42]
+    if not log_ws.get_all_values(): # [cite: 42]
+        append_row_to_sheet(log_ws, [ # [cite: 42]
+            LOG_COLUMNS["timestamp"], # [cite: 43]
+            LOG_COLUMNS["updated_by"], # [cite: 43]
+            LOG_COLUMNS["field"], # [cite: 43]
+            LOG_COLUMNS["old_value"], # [cite: 43]
+            LOG_COLUMNS["new_value"], # [cite: 43]
+            LOG_COLUMNS["issue_id"] # [cite: 43]
         ])
 
-    tracker_df = get_dataframe_from_sheet(tracker_ws)
-    responses_df = get_dataframe_from_sheet(response_ws)
+    tracker_df = get_dataframe_from_sheet(tracker_ws) # [cite: 43]
+    responses_df = get_dataframe_from_sheet(response_ws) # [cite: 43]
 
-    if tracker_df.empty:
-        st.info("Tracker sheet is empty. No issues to update from responses.")
-        return
-    if responses_df.empty:
-        st.info("Response sheet is empty. No new responses to process.")
-        return
+    if tracker_df.empty: # [cite: 43]
+        st.info("Tracker sheet is empty. No issues to update from responses.") # [cite: 44]
+        return # [cite: 44]
+    if responses_df.empty: # [cite: 44]
+        st.info("Response sheet is empty. No new responses to process.") # [cite: 44]
+        return # [cite: 44]
 
-    # Define the mapping from response sheet columns to tracker sheet columns
-    response_to_tracker_map = {
-        RESPONSE_COLUMNS["email_phone"]: TRACKER_COLUMNS["email_phone"],
-        RESPONSE_COLUMNS["description"]: TRACKER_COLUMNS["description"],
-        RESPONSE_COLUMNS["issue_type"]: TRACKER_COLUMNS["issue_type"],
-        RESPONSE_COLUMNS["gov_body"]: TRACKER_COLUMNS["gov_body"],
-        RESPONSE_COLUMNS["priority_level"]: TRACKER_COLUMNS["priority"],
-        RESPONSE_COLUMNS["proposed_resolution"]: TRACKER_COLUMNS["resolution"],
-        RESPONSE_COLUMNS["file"]: TRACKER_COLUMNS["file"],
-        RESPONSE_COLUMNS["date_submission"]: TRACKER_COLUMNS["date"]
+    # Define the mapping from response sheet columns to tracker sheet columns # [cite: 44]
+    response_to_tracker_map = { # [cite: 44]
+        RESPONSE_COLUMNS["email_phone"]: TRACKER_COLUMNS["email_phone"], # [cite: 44]
+        RESPONSE_COLUMNS["description"]: TRACKER_COLUMNS["description"], # [cite: 44]
+        RESPONSE_COLUMNS["issue_type"]: TRACKER_COLUMNS["issue_type"], # [cite: 44]
+        RESPONSE_COLUMNS["gov_body"]: TRACKER_COLUMNS["gov_body"], # [cite: 45]
+        RESPONSE_COLUMNS["priority_level"]: TRACKER_COLUMNS["priority"], # [cite: 45]
+        RESPONSE_COLUMNS["proposed_resolution"]: TRACKER_COLUMNS["resolution"], # [cite: 45]
+        RESPONSE_COLUMNS["file"]: TRACKER_COLUMNS["file"], # [cite: 45]
+        RESPONSE_COLUMNS["date_submission"]: TRACKER_COLUMNS["date"] # [cite: 45]
     }
 
-    updated_count = 0
-    for i, resp in responses_df.iterrows():
-        # Match based on 'Contact Person Name & Designation' and 'Title of Issue'
-        contact_person_col = RESPONSE_COLUMNS["contact_person"]
-        issue_title_col = RESPONSE_COLUMNS["issue_title"]
-        tracker_contact_col = TRACKER_COLUMNS["contact"]
-        tracker_issue_title_col = TRACKER_COLUMNS["issue_title"]
+    updated_count = 0 # [cite: 45]
+    for i, resp in responses_df.iterrows(): # [cite: 45]
+        # Match based on 'Contact Person Name & Designation' and 'Title of Issue' # [cite: 45]
+        contact_person_col = RESPONSE_COLUMNS["contact_person"] # [cite: 45]
+        issue_title_col = RESPONSE_COLUMNS["issue_title"] # [cite: 45]
+        tracker_contact_col = TRACKER_COLUMNS["contact"] # [cite: 46]
+        tracker_issue_title_col = TRACKER_COLUMNS["issue_title"] # [cite: 46]
 
-        # Validate existence of matching columns in response data
-        if contact_person_col not in resp or issue_title_col not in resp:
-            st.warning(f"Response row {i+2} is missing required matching columns ('{contact_person_col}' or '{issue_title_col}'). Skipping.")
-            continue
-        # Validate existence of matching columns in tracker dataframe
-        if tracker_contact_col not in tracker_df.columns or tracker_issue_title_col not in tracker_df.columns:
-            st.error(f"Tracker sheet is missing required matching columns ('{tracker_contact_col}' or '{tracker_issue_title_col}'). Cannot process responses.")
-            return
+        # Validate existence of matching columns in response data # [cite: 46]
+        if contact_person_col not in resp or issue_title_col not in resp: # [cite: 46]
+            st.warning(f"Response row {i+2} is missing required matching columns ('{contact_person_col}' or '{issue_title_col}'). Skipping.") # [cite: 46, 47]
+            continue # [cite: 47]
+        # Validate existence of matching columns in tracker dataframe # [cite: 47]
+        if tracker_contact_col not in tracker_df.columns or tracker_issue_title_col not in tracker_df.columns: # [cite: 47]
+            st.error(f"Tracker sheet is missing required matching columns ('{tracker_contact_col}' or '{tracker_issue_title_col}'). Cannot process responses.") # [cite: 47]
+            return # [cite: 47]
 
-        match = tracker_df[
-            (tracker_df[tracker_contact_col] == resp[contact_person_col]) &
-            (tracker_df[tracker_issue_title_col] == resp[issue_title_col])
+        match = tracker_df[ # [cite: 47]
+            (tracker_df[tracker_contact_col] == resp[contact_person_col]) & # [cite: 48]
+            (tracker_df[tracker_issue_title_col] == resp[issue_title_col]) # [cite: 48]
         ]
 
-        if not match.empty:
-            row_idx = match.index[0]
-            # Ensure current_issue_id is converted to string to prevent JSON serialization errors
-            current_issue_id = str(tracker_df.at[row_idx, TRACKER_COLUMNS["id"]])
+        if not match.empty: # [cite: 48]
+            row_idx = match.index[0] # [cite: 48]
+            # Ensure current_issue_id is converted to string to prevent JSON serialization errors # [cite: 48]
+            current_issue_id = str(tracker_df.at[row_idx, TRACKER_COLUMNS["id"]]) # [cite: 48]
 
-            changes_made_to_row = False
-            for resp_col, tracker_col in response_to_tracker_map.items():
-                if tracker_col in tracker_df.columns and resp_col in resp:
-                    # Only update if the tracker field is empty or NaN
-                    if pd.isna(tracker_df.at[row_idx, tracker_col]) or str(tracker_df.at[row_idx, tracker_col]).strip() == "":
-                        old_value = tracker_df.at[row_idx, tracker_col]
-                        new_value = resp[resp_col]
-                        tracker_df.at[row_idx, tracker_col] = new_value
-                        changes_made_to_row = True
+            changes_made_to_row = False # [cite: 49]
+            for resp_col, tracker_col in response_to_tracker_map.items(): # [cite: 49]
+                if tracker_col in tracker_df.columns and resp_col in resp: # [cite: 49]
+                    # Only update if the tracker field is empty or NaN # [cite: 49]
+                    if pd.isna(tracker_df.at[row_idx, tracker_col]) or str(tracker_df.at[row_idx, tracker_col]).strip() == "": # [cite: 49, 50]
+                        old_value = tracker_df.at[row_idx, tracker_col] # [cite: 50]
+                        new_value = resp[resp_col] # [cite: 50]
+                        tracker_df.at[row_idx, tracker_col] = new_value # [cite: 50]
+                        changes_made_to_row = True # [cite: 51]
 
-                        # Log the individual change
-                        append_row_to_sheet(log_ws, [
-                            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            st.session_state.user_name,
-                            tracker_col, # Corrected: Use tracker_col here
-                            str(old_value) if pd.notna(old_value) else "", # Convert NaN to empty string for log
-                            str(new_value) if pd.notna(new_value) else "",
-                            current_issue_id
+                        # Log the individual change # [cite: 51]
+                        append_row_to_sheet(log_ws, [ # [cite: 51]
+                            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), # [cite: 51]
+                            st.session_state.user_name, # [cite: 52]
+                            tracker_col, # Corrected: Use tracker_col here # [cite: 52]
+                            str(old_value) if pd.notna(old_value) else "", # Convert NaN to empty string for log # [cite: 52]
+                            str(new_value) if pd.notna(new_value) else "", # [cite: 53]
+                            current_issue_id # [cite: 53]
                         ])
 
-            if changes_made_to_row:
-                tracker_df.at[row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                tracker_df.at[row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name
-                updated_count += 1
+            if changes_made_to_row: # [cite: 53]
+                tracker_df.at[row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # [cite: 54]
+                tracker_df.at[row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name # [cite: 54]
+                updated_count += 1 # [cite: 54]
 
-    if updated_count > 0:
-        # Update the entire tracker worksheet with the modified DataFrame
-        if update_entire_worksheet(tracker_ws, tracker_df):
-            st.success(f"Tracker updated successfully with {updated_count} new responses!")
-        else:
-            st.error("Failed to write updated tracker data back to the sheet.")
-    else:
-        st.info("No new responses found to update the tracker.")
+    if updated_count > 0: # [cite: 54]
+        # Update the entire tracker worksheet with the modified DataFrame # [cite: 54]
+        if update_entire_worksheet(tracker_ws, tracker_df): # [cite: 54]
+            st.success(f"Tracker updated successfully with {updated_count} new responses!") # [cite: 54]
+        else: # [cite: 55]
+            st.error("Failed to write updated tracker data back to the sheet.") # [cite: 55]
+    else: # [cite: 55]
+        st.info("No new responses found to update the tracker.") # [cite: 55]
 
 
-def display_issue_tracker():
-    """Displays the issue tracker functionality (admin-only)."""
-    st.header("Issue Tracker")
-    st.info("Admin-only section for managing issues raised by departments.")
+def display_issue_tracker(): # [cite: 55]
+    """Displays the issue tracker functionality (admin-only).""" # [cite: 55]
+    st.header("Issue Tracker") # [cite: 55]
+    st.info("Admin-only section for managing issues raised by departments.") # [cite: 55]
 
-    log_ws = get_worksheet(client, SHEET_CONFIG["log"]["id"], SHEET_CONFIG["log"]["name"])
-    tracker_ws = get_worksheet(client, SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"])
+    log_ws = get_worksheet(client, SHEET_CONFIG["log"]["id"], SHEET_CONFIG["log"]["name"]) # [cite: 55]
+    tracker_ws = get_worksheet(client, SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"]) # [cite: 55]
 
-    if log_ws is None or tracker_ws is None:
-        return # Exit if any required worksheet is not found
+    if log_ws is None or tracker_ws is None: # [cite: 55]
+        return # Exit if any required worksheet is not found # [cite: 56]
 
-    # First, process any new responses from the response sheet
-    update_tracker_with_responses(log_ws)
+    # First, process any new responses from the response sheet # [cite: 56]
+    update_tracker_with_responses(log_ws) # [cite: 56]
 
-    # Then, display the current tracker data and allow for manual updates
-    st.subheader("Current Issue Tracker Data")
-    tracker_df = get_dataframe_from_sheet(tracker_ws)
+    # Then, display the current tracker data and allow for manual updates # [cite: 56]
+    st.subheader("Current Issue Tracker Data") # [cite: 56]
+    tracker_df = get_dataframe_from_sheet(tracker_ws) # [cite: 56]
 
-    if not tracker_df.empty:
-        st.dataframe(tracker_df, use_container_width=True)
+    if not tracker_df.empty: # [cite: 56]
+        st.dataframe(tracker_df, use_container_width=True) # [cite: 56]
 
-        # Initialize session state for editing an issue
-        if 'editing_tracker_issue_id' not in st.session_state:
-            st.session_state.editing_tracker_issue_id = None
-        if 'editing_tracker_data' not in st.session_state:
-            st.session_state.editing_tracker_data = {}
+        # Initialize session state for editing an issue # [cite: 56]
+        if 'editing_tracker_issue_id' not in st.session_state: # [cite: 56, 57]
+            st.session_state.editing_tracker_issue_id = None # [cite: 57]
+        if 'editing_tracker_data' not in st.session_state: # [cite: 57]
+            st.session_state.editing_tracker_data = {} # [cite: 57]
 
-        st.subheader("Update Existing Issue")
+        st.subheader("Update Existing Issue") # [cite: 57]
 
-        # Create a list of issue titles for the selectbox
-        issue_titles = ["Select an Issue to Edit"] + tracker_df[TRACKER_COLUMNS["issue_title"]].tolist()
-        selected_issue_title = st.selectbox(
-            "Choose an Issue to Update",
-            issue_titles,
-            key="select_issue_to_edit"
+        # Create a list of issue titles for the selectbox # [cite: 57]
+        issue_titles = ["Select an Issue to Edit"] + tracker_df[TRACKER_COLUMNS["issue_title"]].tolist() # [cite: 57]
+        selected_issue_title = st.selectbox( # [cite: 57]
+            "Choose an Issue to Update", # [cite: 58]
+            issue_titles, # [cite: 58]
+            key="select_issue_to_edit" # [cite: 58]
         )
 
-        if selected_issue_title != "Select an Issue to Edit":
-            # Find the selected row in the DataFrame
-            selected_row = tracker_df[tracker_df[TRACKER_COLUMNS["issue_title"]] == selected_issue_title].iloc[0]
+        if selected_issue_title != "Select an Issue to Edit": # [cite: 58]
+            # Find the selected row in the DataFrame # [cite: 58]
+            selected_row = tracker_df[tracker_df[TRACKER_COLUMNS["issue_title"]] == selected_issue_title].iloc[0] # [cite: 58]
 
-            # Pre-fill session state for the form
-            st.session_state.editing_tracker_issue_id = selected_row[TRACKER_COLUMNS["id"]]
-            st.session_state.editing_tracker_data = selected_row.to_dict()
+            # Pre-fill session state for the form # [cite: 59]
+            st.session_state.editing_tracker_issue_id = selected_row[TRACKER_COLUMNS["id"]] # [cite: 59]
+            st.session_state.editing_tracker_data = selected_row.to_dict() # [cite: 59]
 
-            st.write(f"Editing Issue: **{selected_issue_title}**")
+            st.write(f"Editing Issue: **{selected_issue_title}**") # [cite: 59]
 
-            with st.form("edit_tracker_issue_form"):
-                # Display non-editable fields
-                st.text_input("ID", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["id"], ""), disabled=True)
-                st.text_input("Business Vertical", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["business_vertical"], ""), disabled=True)
-                st.text_input("Team", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["team"], ""), disabled=True)
-                st.text_input("Contact", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["contact"], ""), disabled=True)
+            with st.form("edit_tracker_issue_form"): # [cite: 59]
+                # Display non-editable fields # [cite: 59]
+                st.text_input("ID", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["id"], ""), disabled=True) # [cite: 59, 60]
+                st.text_input("Business Vertical", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["business_vertical"], ""), disabled=True) # [cite: 60]
+                st.text_input("Team", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["team"], ""), disabled=True) # [cite: 60]
+                st.text_input("Contact", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["contact"], ""), disabled=True) # [cite: 60]
 
-                # Editable fields
-                updated_email_phone = st.text_input("Email/Phone", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["email_phone"], ""), key="edit_email_phone")
-                updated_description = st.text_area("Description", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["description"], ""), key="edit_description")
-                updated_issue_type = st.text_input("Issue Type", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["issue_type"], ""), key="edit_issue_type")
-                updated_gov_body = st.text_input("Gov Body", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["gov_body"], ""), key="edit_gov_body")
+                # Editable fields # [cite: 60]
+                updated_email_phone = st.text_input("Email/Phone", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["email_phone"], ""), key="edit_email_phone") # [cite: 60]
+                updated_description = st.text_area("Description", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["description"], ""), key="edit_description") # [cite: 61]
+                updated_issue_type = st.text_input("Issue Type", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["issue_type"], ""), key="edit_issue_type") # [cite: 61]
+                updated_gov_body = st.text_input("Gov Body", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["gov_body"], ""), key="edit_gov_body") # [cite: 61]
 
-                # Define status options
-                status_options = ["Open", "In Progress", "Resolved", "Closed"]
-                current_status_value = st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["status"], "Open")
-                # Safely get the index for the selectbox
-                try:
-                    status_index = status_options.index(current_status_value)
-                except ValueError:
-                    status_index = 0 # Default to "Open" if current status is not in options
-                updated_status = st.selectbox("Status", options=status_options, index=status_index, key="edit_status")
+                # Define status options # [cite: 61]
+                status_options = ["Open", "In Progress", "Resolved", "Closed"] # [cite: 62]
+                current_status_value = st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["status"], "Open") # [cite: 62]
+                # Safely get the index for the selectbox # [cite: 62]
+                try: # [cite: 62]
+                    status_index = status_options.index(current_status_value) # [cite: 62]
+                except ValueError: # [cite: 63]
+                    status_index = 0 # Default to "Open" if current status is not in options # [cite: 63]
+                updated_status = st.selectbox("Status", options=status_options, index=status_index, key="edit_status") # [cite: 63]
 
-                # Define priority options
-                priority_options = ["Low", "Medium", "High", "Critical"]
-                current_priority_value = st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["priority"], "Low")
-                # Safely get the index for the selectbox
-                try:
-                    priority_index = priority_options.index(current_priority_value)
-                    except ValueError:
-                    priority_index = 0 # Default to "Low" if current priority is not in options
-                updated_priority = st.selectbox("Priority", options=priority_options, index=priority_index, key="edit_priority")
+                # Define priority options # [cite: 63]
+                priority_options = ["Low", "Medium", "High", "Critical"] # [cite: 63]
+                current_priority_value = st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["priority"], "Low") # [cite: 64]
+                # Safely get the index for the selectbox # [cite: 64]
+                try: # [cite: 64]
+                    priority_index = priority_options.index(current_priority_value) # [cite: 64]
+                except ValueError: # CORRECTED Indentation from here
+                    priority_index = 0 # Default to "Low" if current priority is not in options # [cite: 65]
+                updated_priority = st.selectbox("Priority", options=priority_options, index=priority_index, key="edit_priority") # [cite: 65]
 
-                updated_resolution = st.text_area("Resolution", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["resolution"], ""), key="edit_resolution")
-                updated_file = st.text_input("File", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["file"], ""), key="edit_file")
-                updated_date = st.text_input("Date", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["date"], ""), key="edit_date")
-                updated_response = st.text_area("Response", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["response"], ""), key="edit_response")
+                updated_resolution = st.text_area("Resolution", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["resolution"], ""), key="edit_resolution") # [cite: 65]
+                updated_file = st.text_input("File", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["file"], ""), key="edit_file") # [cite: 65]
+                updated_date = st.text_input("Date", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["date"], ""), key="edit_date") # [cite: 66]
+                updated_response = st.text_area("Response", value=st.session_state.editing_tracker_data.get(TRACKER_COLUMNS["response"], ""), key="edit_response") # [cite: 66]
 
-                # Adjusted column layout for buttons
-                col_save, col_cancel = st.columns([1,1]) # Use equal columns for save and cancel
-                with col_save:
-                    save_changes = st.form_submit_button("Save Changes")
-                with col_cancel:
-                    cancel_edit = st.form_submit_button("Cancel")
+                # Adjusted column layout for buttons # [cite: 66]
+                col_save, col_cancel = st.columns([1,1]) # Use equal columns for save and cancel # [cite: 66]
+                with col_save: # [cite: 66, 67]
+                    save_changes = st.form_submit_button("Save Changes") # [cite: 67]
+                with col_cancel: # [cite: 67]
+                    cancel_edit = st.form_submit_button("Cancel") # [cite: 67]
 
-                if save_changes:
-                    # Find the original row index in the DataFrame
-                    original_row_idx = tracker_df[tracker_df[TRACKER_COLUMNS["id"]] == st.session_state.editing_tracker_issue_id].index[0]
+                if save_changes: # [cite: 67]
+                    # Find the original row index in the DataFrame # [cite: 68]
+                    original_row_idx = tracker_df[tracker_df[TRACKER_COLUMNS["id"]] == st.session_state.editing_tracker_issue_id].index[0] # [cite: 68]
 
-                    changes_made = {}
-                    # Compare and update fields, logging changes
-                    fields_to_update = {
-                        TRACKER_COLUMNS["email_phone"]: updated_email_phone,
-                        TRACKER_COLUMNS["description"]: updated_description,
-                        TRACKER_COLUMNS["issue_type"]: updated_issue_type,
-                        TRACKER_COLUMNS["gov_body"]: updated_gov_body,
-                        TRACKER_COLUMNS["priority"]: updated_priority,
-                        TRACKER_COLUMNS["resolution"]: updated_resolution,
-                        TRACKER_COLUMNS["file"]: updated_file,
-                        TRACKER_COLUMNS["date"]: updated_date,
-                        TRACKER_COLUMNS["status"]: updated_status,
-                        TRACKER_COLUMNS["response"]: updated_response
+                    changes_made = {} # [cite: 68]
+                    # Compare and update fields, logging changes # [cite: 68]
+                    fields_to_update = { # [cite: 68, 69]
+                        TRACKER_COLUMNS["email_phone"]: updated_email_phone, # [cite: 69]
+                        TRACKER_COLUMNS["description"]: updated_description, # [cite: 69]
+                        TRACKER_COLUMNS["issue_type"]: updated_issue_type, # [cite: 69]
+                        TRACKER_COLUMNS["gov_body"]: updated_gov_body, # [cite: 70]
+                        TRACKER_COLUMNS["priority"]: updated_priority, # [cite: 70]
+                        TRACKER_COLUMNS["resolution"]: updated_resolution, # [cite: 70]
+                        TRACKER_COLUMNS["file"]: updated_file, # [cite: 70]
+                        TRACKER_COLUMNS["date"]: updated_date, # [cite: 71]
+                        TRACKER_COLUMNS["status"]: updated_status, # [cite: 71]
+                        TRACKER_COLUMNS["response"]: updated_response # [cite: 71]
                     }
 
-                    for col_name, new_value in fields_to_update.items():
-                        current_value = tracker_df.at[original_row_idx, col_name]
-                        # Convert to string for comparison to handle potential type differences (e.g., int vs str)
-                        if str(current_value).strip() != str(new_value).strip():
-                            tracker_df.at[original_row_idx, col_name] = new_value
-                            changes_made[col_name] = {"old": current_value, "new": new_value}
+                    for col_name, new_value in fields_to_update.items(): # [cite: 71]
+                        current_value = tracker_df.at[original_row_idx, col_name] # [cite: 72]
+                        # Convert to string for comparison to handle potential type differences (e.g., int vs str) # [cite: 72]
+                        if str(current_value).strip() != str(new_value).strip(): # [cite: 72]
+                            tracker_df.at[original_row_idx, col_name] = new_value # [cite: 73]
+                            changes_made[col_name] = {"old": current_value, "new": new_value} # [cite: 73]
 
-                            # Log the change
-                            append_row_to_sheet(log_ws, [
-                                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                st.session_state.user_name,
-                                col_name,
-                                str(current_value) if pd.notna(current_value) else "",
-                                str(new_value) if pd.notna(new_value) else "",
-                                str(st.session_state.editing_tracker_issue_id)
+                            # Log the change # [cite: 73]
+                            append_row_to_sheet(log_ws, [ # [cite: 74]
+                                datetime.now().strftime("%Y-%m-%d %H:%M:%S"), # [cite: 74]
+                                st.session_state.user_name, # [cite: 74]
+                                col_name, # [cite: 75]
+                                str(current_value) if pd.notna(current_value) else "", # [cite: 75]
+                                str(new_value) if pd.notna(new_value) else "", # [cite: 75]
+                                str(st.session_state.editing_tracker_issue_id) # [cite: 76]
                             ])
 
-                    if changes_made:
-                        tracker_df.at[original_row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        tracker_df.at[original_row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name
+                    if changes_made: # [cite: 76]
+                        tracker_df.at[original_row_idx, TRACKER_COLUMNS["last_updated"]] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # [cite: 76]
+                        tracker_df.at[original_row_idx, TRACKER_COLUMNS["updated_by"]] = st.session_state.user_name # [cite: 77]
 
-                        if update_entire_worksheet(tracker_ws, tracker_df):
-                            st.success("Issue updated successfully!")
-                            st.session_state.editing_tracker_issue_id = None
-                            st.session_state.editing_tracker_data = {}
-                            st.rerun()
-                        else:
-                            st.error("Failed to save changes to the tracker sheet.")
-                    else:
-                        st.info("No changes detected.")
-                        st.session_state.editing_tracker_issue_id = None
-                        st.session_state.editing_tracker_data = {}
-                        st.rerun()
+                        if update_entire_worksheet(tracker_ws, tracker_df): # [cite: 77]
+                            st.success("Issue updated successfully!") # [cite: 77]
+                            st.session_state.editing_tracker_issue_id = None # [cite: 78]
+                            st.session_state.editing_tracker_data = {} # [cite: 78]
+                            st.rerun() # [cite: 78]
+                        else: # [cite: 78]
+                            st.error("Failed to save changes to the tracker sheet.") # [cite: 79]
+                    else: # [cite: 79]
+                        st.info("No changes detected.") # [cite: 79]
+                        st.session_state.editing_tracker_issue_id = None # [cite: 79]
+                        st.session_state.editing_tracker_data = {} # [cite: 80]
+                        st.rerun() # [cite: 80]
 
-                elif cancel_edit:
-                    st.session_state.editing_tracker_issue_id = None
-                    st.session_state.editing_tracker_data = {}
-                    st.rerun()
+                elif cancel_edit: # [cite: 80]
+                    st.session_state.editing_tracker_issue_id = None # [cite: 80]
+                    st.session_state.editing_tracker_data = {} # [cite: 81]
+                    st.rerun() # [cite: 81]
 
-    else:
-        st.info("Tracker is currently empty. No issues to display or update.")
+    else: # [cite: 81]
+        st.info("Tracker is currently empty. No issues to display or update.") # [cite: 81, 82]
 
 
 # --- Authentication ---
-def login():
-    """Handles user login."""
-    st.sidebar.header("Login")
-    username = st.sidebar.selectbox("Select Your Name", INTERN_NAMES)
-    password = st.sidebar.text_input("Password", type="password")
+def login(): # [cite: 82]
+    """Handles user login.""" # [cite: 82]
+    st.sidebar.header("Login") # [cite: 82]
+    username = st.sidebar.selectbox("Select Your Name", INTERN_NAMES) # [cite: 82]
+    password = st.sidebar.text_input("Password", type="password") # [cite: 82]
 
-    if st.sidebar.button("Login"):
-        if password == ADMIN_PASSWORD:
-            st.session_state.user_name = username
-            st.session_state.logged_in = True
-            st.session_state.is_admin = True
-            st.success(f"Welcome, Admin {username}!")
-            st.rerun() # Rerun to update UI based on login status
-        elif password == USER_PASSWORD:
-            st.session_state.user_name = username
-            st.session_state.logged_in = True
-            st.session_state.is_admin = False
-            st.success(f"Welcome, {username}!")
-            st.rerun() # Rerun to update UI based on login status
-        else:
-            st.error("Incorrect credentials")
+    if st.sidebar.button("Login"): # [cite: 82]
+        if password == ADMIN_PASSWORD: # [cite: 82]
+            st.session_state.user_name = username # [cite: 82]
+            st.session_state.logged_in = True # [cite: 82]
+            st.session_state.is_admin = True # [cite: 82]
+            st.success(f"Welcome, Admin {username}!") # [cite: 83]
+            st.rerun() # Rerun to update UI based on login status # [cite: 83]
+        elif password == USER_PASSWORD: # [cite: 83]
+            st.session_state.user_name = username # [cite: 83]
+            st.session_state.logged_in = True # [cite: 83]
+            st.session_state.is_admin = False # [cite: 83]
+            st.success(f"Welcome, {username}!") # [cite: 83]
+            st.rerun() # Rerun to update UI based on login status # [cite: 84]
+        else: # [cite: 84]
+            st.error("Incorrect credentials") # [cite: 84]
 
 
-def logout():
-    """Handles user logout."""
-    if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.user_name = ""
-        st.session_state.is_admin = False
-        # Clear blog post related session states on logout
-        st.session_state.temp_blog_title = ""
-        st.session_state.temp_blog_content = ""
-        st.session_state.edit_blog_idx = None
-        st.session_state.edit_blog_title = ""
-        st.session_state.edit_blog_content = ""
-        # Clear tracker related session states on logout
-        st.session_state.editing_tracker_issue_id = None
-        st.session_state.editing_tracker_data = {}
+def logout(): # [cite: 84]
+    """Handles user logout.""" # [cite: 84]
+    if st.sidebar.button("Logout"): # [cite: 84]
+        st.session_state.logged_in = False # [cite: 84]
+        st.session_state.user_name = "" # [cite: 84]
+        st.session_state.is_admin = False # [cite: 84]
+        # Clear blog post related session states on logout # [cite: 84]
+        st.session_state.temp_blog_title = "" # [cite: 85]
+        st.session_state.temp_blog_content = "" # [cite: 85]
+        st.session_state.edit_blog_idx = None # [cite: 85]
+        st.session_state.edit_blog_title = "" # [cite: 85]
+        st.session_state.edit_blog_content = "" # [cite: 85]
+        # Clear tracker related session states on logout # [cite: 85]
+        st.session_state.editing_tracker_issue_id = None # [cite: 85]
+        st.session_state.editing_tracker_data = {} # [cite: 85]
 
-        st.success("Logged out successfully.")
-        st.rerun() # Rerun to show login screen
+        st.success("Logged out successfully.") # [cite: 85]
+        st.rerun() # Rerun to show login screen # [cite: 85, 86]
 
 
 # --- Main ---
-def main():
-    """Main function to run the Streamlit app."""
-    # --- Session Initialization ---
-    # Initialize all necessary session state variables if they don't exist. # This ensures a consistent state across reruns.
-    if "user_name" not in st.session_state:
-        st.session_state.user_name = ""
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "is_admin" not in st.session_state:
-        st.session_state.is_admin = False
-    if "temp_blog_title" not in st.session_state:
-        st.session_state.temp_blog_title = ""
-    if "temp_blog_content" not in st.session_state:
-        st.session_state.temp_blog_content = ""
-    if 'edit_blog_idx' not in st.session_state:
-        st.session_state.edit_blog_idx = None
-    if 'edit_blog_title' not in st.session_state:
-        st.session_state.edit_blog_title = ""
-    if 'edit_blog_content' not in st.session_state:
-        st.session_state.edit_blog_content = "" # Corrected: Was temp_blog_content
-    # New session state for tracker editing
-    if 'editing_tracker_issue_id' not in st.session_state:
-        st.session_state.editing_tracker_issue_id = None
-    if 'editing_tracker_data' not in st.session_state:
-        st.session_state.editing_tracker_data = {}
+def main(): # [cite: 86]
+    """Main function to run the Streamlit app.""" # [cite: 86]
+    # --- Session Initialization --- # [cite: 86]
+    # Initialize all necessary session state variables if they don't exist. # [cite: 86, 87]
+    # This ensures a consistent state across reruns. # [cite: 87]
+    if "user_name" not in st.session_state: # [cite: 87]
+        st.session_state.user_name = "" # [cite: 87]
+    if "logged_in" not in st.session_state: # [cite: 87]
+        st.session_state.logged_in = False # [cite: 87]
+    if "is_admin" not in st.session_state: # [cite: 87]
+        st.session_state.is_admin = False # [cite: 87]
+    if "temp_blog_title" not in st.session_state: # [cite: 87]
+        st.session_state.temp_blog_title = "" # [cite: 87]
+    if "temp_blog_content" not in st.session_state: # [cite: 87]
+        st.session_state.temp_blog_content = "" # [cite: 87]
+    if 'edit_blog_idx' not in st.session_state: # [cite: 87, 88]
+        st.session_state.edit_blog_idx = None # [cite: 88]
+    if 'edit_blog_title' not in st.session_state: # [cite: 88]
+        st.session_state.edit_blog_title = "" # [cite: 88]
+    if 'edit_blog_content' not in st.session_state: # [cite: 88]
+        st.session_state.edit_blog_content = "" # Corrected: Was temp_blog_content # [cite: 88]
+    # New session state for tracker editing # [cite: 88]
+    if 'editing_tracker_issue_id' not in st.session_state: # [cite: 88]
+        st.session_state.editing_tracker_issue_id = None # [cite: 88]
+    if 'editing_tracker_data' not in st.session_state: # [cite: 88]
+        st.session_state.editing_tracker_data = {} # [cite: 88]
 
-    
-    # Display login or main content based on login status
-    if not st.session_state.logged_in:
-        st.write("Please log in to access the portal features.")
-        login()
-    else:
-        st.sidebar.write(f"Logged in as: **{st.session_state.user_name}**")
-        logout() # Show logout button if logged in
+    # Display login or main content based on login status # [cite: 89]
+    if not st.session_state.logged_in: # [cite: 89]
+        st.write("Please log in to access the portal features.") # [cite: 89]
+        login() # [cite: 89]
+    else: # [cite: 89]
+        st.sidebar.write(f"Logged in as: **{st.session_state.user_name}**") # [cite: 89]
+        logout() # Show logout button if logged in # [cite: 89]
 
-        # --- Tabs for Portal ---
-        tabs = ["Tasks", "Intern Profiles"]
-        # Blog Board is now visible to all logged-in users (Admins, Chairman, and other Interns)
-        tabs.insert(1, "Blog Board")
+        # --- Tabs for Portal --- # [cite: 89]
+        tabs = ["Tasks", "Intern Profiles"] # [cite: 89]
+        # Blog Board is now visible to all logged-in users (Admins, Chairman, and other Interns) # [cite: 90]
+        tabs.insert(1, "Blog Board") # [cite: 90]
 
-        # Issue Tracker remains exclusive to Admin/Chairman
-        if st.session_state.is_admin or st.session_state.user_name == "Chairman":
-            tabs.append("Issue Tracker")
+        # Issue Tracker remains exclusive to Admin/Chairman # [cite: 90]
+        if st.session_state.is_admin or st.session_state.user_name == "Chairman": # [cite: 90]
+            tabs.append("Issue Tracker") # [cite: 90]
 
-        selected_tab = st.selectbox("Select a tab", tabs)
+        selected_tab = st.selectbox("Select a tab", tabs) # [cite: 90]
 
-        # Display content based on selected tab
-        if selected_tab == "Tasks":
-            display_tasks()
-        elif selected_tab == "Blog Board":
-            display_blog_board()
-        elif selected_tab == "Intern Profiles":
-            display_intern_profiles()
-        elif selected_tab == "Issue Tracker":
-            display_issue_tracker()
+        # Display content based on selected tab # [cite: 90]
+        if selected_tab == "Tasks": # [cite: 91]
+            display_tasks() # [cite: 91]
+        elif selected_tab == "Blog Board": # [cite: 91]
+            display_blog_board() # [cite: 91]
+        elif selected_tab == "Intern Profiles": # [cite: 91]
+            display_intern_profiles() # [cite: 91]
+        elif selected_tab == "Issue Tracker": # [cite: 91]
+            display_issue_tracker() # [cite: 91]
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": # [cite: 91]
+    main() # [cite: 92]
