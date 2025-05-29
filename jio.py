@@ -24,13 +24,25 @@ SHEET_CONFIG = {
 }
 GOOGLE_CREDS_FILE = "reliance-jio-461118-fe5eb8ae75a7.json"
 ADMIN_PASSWORD = "admin@jio"
+MANAGER_PASSWORD = "manager@jio"
 USER_PASSWORD = "jio2025" # General user password
+
+ADMIN_NAMES = [
+    "Admin", "Chairman"
+]
+
+MANAGER_NAMES = [
+    "Policy", "Jio Retail Manager", "Jio Platforms Manager",
+    "Jio Financial Manager", "Jio Legal Services"
+]
+
 INTERN_NAMES = [
-    "Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager",
-    "Jio Financial Manager", "Jio Legal Services",
     "Zishan Mallick", "Satvik Ahlawat", "Trapti Singh", "Ujjwal Akshith Mondreti",
     "Aanchal Verma", "Rohit Mishra"
 ]
+
+ALL = ADMIN_NAMES + MANAGER_NAMES + INTERN_NAMES
+
 TASKS = {
     "Week 1": "Intro to Jio Platforms + Submit project preference form",
     "Week 2": "Research Jio's AI Strategy and write 500-word report",
@@ -603,17 +615,23 @@ def display_issue_tracker():
 def login():
     """Handles user login."""
     st.sidebar.header("Login")
-    username = st.sidebar.selectbox("Select Your Name", INTERN_NAMES)
+    username = st.sidebar.selectbox("Select Your Name", ALL)
     password = st.sidebar.text_input("Password", type="password")
  
     if st.sidebar.button("Login"):
-        if password == ADMIN_PASSWORD:
+        if username in ADMIN_NAMES and password == ADMIN_PASSWORD:
             st.session_state.user_name = username
             st.session_state.logged_in = True
             st.session_state.is_admin = True
             st.success(f"Welcome, Admin {username}!")
             st.rerun() # Rerun to update UI based on login status
-        elif password == USER_PASSWORD:
+        elif username in MANAGER_NAMES and password == MANAGER_PASSWORD:
+            st.session_state.user_name = username
+            st.session_state.logged_in = True
+            st.session_state.is_admin = False
+            st.success(f"Welcome, Manager {username}!")
+            st.rerun() # Rerun to update UI based on login status
+        elif username in INTERN_NAMES and password == USER_PASSWORD:
             st.session_state.user_name = username
             st.session_state.logged_in = True
             st.session_state.is_admin = False
@@ -681,12 +699,9 @@ def main():
         logout() # Show logout button if logged in
  
         # --- Tabs for Portal ---
-        tabs = ["Tasks", "Intern Profiles"]
+        tabs = ["Tasks", "Blog Board", "Intern Profiles"]
         # Blog Board is now visible to all logged-in users (Admins, Chairman, and other Interns)
-        tabs.insert(1, "Blog Board")
- 
-        # Issue Tracker remains exclusive to Admin/Chairman
-        if st.session_state.is_admin or st.session_state.user_name == "Chairman":
+        if st.session_state.user_name in ADMIN_NAMES + MANAGER_NAMES:
             tabs.append("Issue Tracker")
  
         selected_tab = st.selectbox("Select a tab", tabs)
