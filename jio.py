@@ -1,157 +1,101 @@
-# Updated version integrating 3 Google Sheets (Tracker, Blog, Responses)
-# and ensuring full access control with Intern, Manager, Admin logins
 
 import streamlit as st
-import pandas as pd
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime
 
-# --- Streamlit Page Setup ---
+# --- Page Setup ---
 st.set_page_config(page_title="Reliance Intern & Policy Issue Portal", layout="wide")
 st.title("🚀 Reliance Intern & Policy Issue Portal")
 st.image("https://raw.githubusercontent.com/Zishanmallick/Zishan/main/L.1.jpg", width=200)
 
-# --- Configuration ---
-SHEET_CONFIG = {
-    "tracker": {"id": "1tq_g6q7tnS2OQjhehSu4lieR3wTOJ-_s0RfItq0XzWI", "name": "Sheet1"},
-    "response": {"id": "1pdfnjg9gzRSpecLyw6kXzVmuPCj1ozq_DJGstQHEzdY", "name": "Form Responses 1"},
-    "blog": {"id": "1uyURjMiA8C1A7Yb5ZVAtUurb7ChCIKwKN7XeJhDP0Cg", "name": "Sheet1"},
-}
-
-GOOGLE_CREDS_FILE = "reliance-jio-461118-34d43c8520bf.json"
-
-# Passwords for access control
-PASSWORDS = {
-    "admin": "admin@jio",
-    "user": "jio2025",
-    "Jio Retail Manager": "retail@jio",
-    "Jio Platforms Manager": "platforms@jio",
-    "Jio Financial Manager": "financial@jio",
-    "Jio Legal Services": "legal@jio",
-}
-
-# Define roles
-ADMINS = ["Admin", "Chairman"]
-MANAGERS = ["Jio Retail Manager", "Jio Platforms Manager", "Jio Financial Manager", "Jio Legal Services"]
-INTERN_NAMES = ADMINS + MANAGERS + [
+# --- Roles and Passwords ---
+INTERN_NAMES = [
+    "Admin", "Chairman", "Policy", "Jio Retail Manager", "Jio Platforms Manager",
+    "Jio Financial Manager", "Jio Legal Services",
     "Zishan Mallick", "Satvik Ahlawat", "Trapti Singh", "Ujjwal Akshith Mondreti",
-    "Aanchal Verma", "Rohit Mishra"]
+    "Aanchal Verma", "Rohit Mishra"
+]
+ROLE_PASSWORDS = {
+    "admin@jio": "admin",
+    "retail@jio": "manager",
+    "platforms@jio": "manager",
+    "financial@jio": "manager",
+    "legal@jio": "manager",
+    "jio2025": "intern"
+}
 
-# --- Google Sheets Client ---
-@st.cache_resource
-def init_gspread():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_FILE, scope)
-    return gspread.authorize(creds)
+# --- Session Initialization ---
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.user_name = ""
+    st.session_state.user_role = ""
 
-gclient = init_gspread()
+# --- Dummy Component Functions ---
+def display_tasks():
+    st.header("🗓️ Weekly Tasks")
+    st.write("Task content here.")
 
-def get_df(sheet_id, name):
-    ws = gclient.open_by_key(sheet_id).worksheet(name)
-    data = ws.get_all_records()
-    return pd.DataFrame(data)
+def display_blog_board():
+    st.header("📰 Blog Board")
+    st.write("Blog content and edit/post if role is admin/chairman/manager.")
 
-def append_row(sheet_id, name, row):
-    ws = gclient.open_by_key(sheet_id).worksheet(name)
-    ws.append_row(row)
+def display_intern_profiles():
+    st.header("👥 Intern Profiles")
+    st.write("List of intern profiles here.")
+
+def display_issue_tracker():
+    st.header("📊 Issue Tracker")
+    st.write("Admin/Chairman/Manager can view and edit issues here.")
 
 # --- Login ---
 def login():
     st.sidebar.header("Login")
-    user = st.sidebar.selectbox("Select User", INTERN_NAMES)
+    username = st.sidebar.selectbox("Select Your Name", INTERN_NAMES)
     password = st.sidebar.text_input("Password", type="password")
-    if st.sidebar.button("Login"):
-        correct = PASSWORDS.get(user, PASSWORDS['user']) == password
-        if correct:
-            st.session_state.user = user
-            st.session_state.logged_in = True
-            st.success(f"Welcome, {user}!")
-            st.rerun()
-        else:
-            st.error("Invalid credentials")
+    login_btn = st.sidebar.button("Login")
 
+    if login_btn:
+        role = ROLE_PASSWORDS.get(password)
+        if role:
+            st.session_state.logged_in = True
+            st.session_state.user_name = username
+            st.session_state.user_role = role if username not in ["Admin", "Chairman"] else "admin"
+            st.success(f"Welcome, {username}!")
+            st.experimental_rerun()
+        else:
+            st.error("Invalid credentials.")
+
+# --- Logout ---
 def logout():
     if st.sidebar.button("Logout"):
-        st.session_state.clear()
-        st.success("Logged out")
-        st.rerun()
-
-# --- Role Check ---
-def is_admin(): return st.session_state.user in ADMINS
-
-def is_manager(): return st.session_state.user in MANAGERS
-
-# --- Blog Section ---
-def blog_board():
-    st.header("📢 Blog Board")
-    blogs = get_df(SHEET_CONFIG["blog"]["id"], SHEET_CONFIG["blog"]["name"])
-    if not blogs.empty:
-        for _, row in blogs.iterrows():
-            st.subheader(row['title'])
-            st.markdown(f"**By:** {row['author']}  ⏰ {row['time']}")
-            st.info(row['content'])
-            st.markdown("---")
-
-    if is_admin() or is_manager():
-        st.subheader("➕ Post a Blog")
-        title = st.text_input("Title")
-        content = st.text_area("Content")
-        if st.button("Post"):
-            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            append_row(SHEET_CONFIG["blog"]["id"], SHEET_CONFIG["blog"]["name"], [st.session_state.user, title, content, now])
-            st.success("Blog posted!")
-            st.rerun()
-
-# --- Tasks Section ---
-def task_board():
-    st.header("📘 Weekly Tasks")
-    st.write("Week 1: Submit form")
-    st.write("Week 2: Research Jio's AI strategy")
-    st.write("Week 3: Group Presentation")
-    st.subheader("📤 Submit your task")
-    week = st.selectbox("Select Week", ["Week 1", "Week 2", "Week 3"])
-    file = st.file_uploader("Upload file", type=["pdf", "docx"])
-    if st.button("Submit Task"):
-        if file:
-            st.success(f"Submitted for {week}!")
-        else:
-            st.warning("Upload a file to submit")
-
-# --- Intern Profiles ---
-def intern_profiles():
-    st.header("👨‍🎓 Intern Profiles")
-    df = pd.DataFrame([
-        {"Name": "Zishan Mallick", "Dept": "Business Analytics", "LinkedIn": "https://linkedin.com/in/zishan-mallick-5809a6181"},
-        {"Name": "Satvik Ahlawat", "Dept": "Marketing", "LinkedIn": "https://linkedin.com/in/satvik-ahlawat"},
-        {"Name": "Trapti Singh", "Dept": "Strategy", "LinkedIn": "https://linkedin.com/in/trapti-singh"},
-        {"Name": "Ujjwal Akshith", "Dept": "Legal", "LinkedIn": "https://linkedin.com/in/ujjwal-mondreti"},
-        {"Name": "Aanchal Verma", "Dept": "Finance", "LinkedIn": "https://linkedin.com/in/aanchal-verma"},
-        {"Name": "Rohit Mishra", "Dept": "Business Analytics", "LinkedIn": "https://linkedin.com/in/rohit-mishra"},
-    ])
-    st.dataframe(df)
+        for key in ["logged_in", "user_name", "user_role"]:
+            st.session_state.pop(key, None)
+        st.experimental_rerun()
 
 # --- Main App ---
 def main():
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
     if not st.session_state.logged_in:
         login()
         return
 
+    st.sidebar.write(f"Logged in as: **{st.session_state.user_name} ({st.session_state.user_role})**")
     logout()
 
-    tabs = ["Tasks", "Blog Board", "Intern Profiles"]
-    if is_admin() or is_manager():
-        tabs.append("Issue Tracker")
+    # Tabs based on roles
+    tabs = ["Tasks"]
+    if st.session_state.user_role in ["admin", "manager"]:
+        tabs += ["Blog Board", "Intern Profiles", "Issue Tracker"]
+    elif st.session_state.user_role == "intern":
+        tabs += ["Blog Board", "Intern Profiles"]
 
-    selected = st.selectbox("Select Tab", tabs)
-    if selected == "Tasks": task_board()
-    elif selected == "Blog Board": blog_board()
-    elif selected == "Intern Profiles": intern_profiles()
-    elif selected == "Issue Tracker":
-        st.header("🛠️ Issue Tracker")
-        st.dataframe(get_df(SHEET_CONFIG["tracker"]["id"], SHEET_CONFIG["tracker"]["name"]))
+    selection = st.selectbox("Select a section", tabs)
 
-if __name__ == '__main__':
+    if selection == "Tasks":
+        display_tasks()
+    elif selection == "Blog Board":
+        display_blog_board()
+    elif selection == "Intern Profiles":
+        display_intern_profiles()
+    elif selection == "Issue Tracker":
+        display_issue_tracker()
+
+if __name__ == "__main__":
     main()
