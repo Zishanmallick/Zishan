@@ -110,7 +110,10 @@ def init_sheets_client():
     """Initializes the Google Sheets client and caches it."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDS_FILE, scope)
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds_dict = st.secrets["google_sheets"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        client = gspread.authorize(creds)
         return gspread.authorize(creds)
     except Exception as e:
         st.error(f"Failed to initialize Google Sheets client. Please ensure '{GOOGLE_CREDS_FILE}' is correct and has necessary permissions: {e}")
