@@ -21,7 +21,7 @@ SHEET_CONFIG = {
     "log": {"id": "1K7myr-bi4ry3z_tQyGg25nRJrn9QrGupeP3Tem1z4kQ", "name": "Sheet1"},
     "blog": {"id": "1uyURjMiA8C1A7Yb5ZVAtUurb7ChCIKwKN7XeJhDP0Cg", "name": "Sheet1"},
 }
-GOOGLE_CREDS_FILE = "reliance-jio-461118-34d43c8520bf.json"
+GOOGLE_CREDS_FILE = "reliance-jio-461118-fe5eb8ae75a7.json"
 ADMIN_PASSWORD = "admin@jio"
 USER_PASSWORD = "jio2025" # General user password
 INTERN_NAMES = [
