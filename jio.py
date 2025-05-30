@@ -377,11 +377,40 @@ def update_tracker_with_responses(log_ws):
     responses_df = get_dataframe_from_sheet(response_ws)
  
     if tracker_df.empty:
-        st.info("Tracker sheet is empty. No issues to update from responses.")
-        return
-    if responses_df.empty:
-        st.info("Response sheet is empty. No new responses to process.")
-        return
+        st.warning("Tracker sheet is empty. Initializing with responses...")
+
+        if responses_df.empty:
+            st.info("No responses available to initialize tracker.")
+            return
+
+        # Create a new tracker DataFrame from the responses
+        initial_rows = []
+        for i, resp in responses_df.iterrows():
+            issue_id = f"Issue-{i+1:03d}"
+            new_row = {
+                TRACKER_COLUMNS["id"]: issue_id,
+                TRACKER_COLUMNS["business_vertical"]: resp.get(RESPONSE_COLUMNS["business_vertical"], ""),
+                TRACKER_COLUMNS["team"]: resp.get(RESPONSE_COLUMNS["department_name"], ""),
+                TRACKER_COLUMNS["contact"]: resp.get(RESPONSE_COLUMNS["contact_person"], ""),
+                TRACKER_COLUMNS["email_phone"]: resp.get(RESPONSE_COLUMNS["email_phone"], ""),
+                TRACKER_COLUMNS["issue_title"]: resp.get(RESPONSE_COLUMNS["issue_title"], ""),
+                TRACKER_COLUMNS["description"]: resp.get(RESPONSE_COLUMNS["description"], ""),
+                TRACKER_COLUMNS["issue_type"]: resp.get(RESPONSE_COLUMNS["issue_type"], ""),
+                TRACKER_COLUMNS["gov_body"]: resp.get(RESPONSE_COLUMNS["gov_body"], ""),
+                TRACKER_COLUMNS["priority"]: resp.get(RESPONSE_COLUMNS["priority_level"], ""),
+                TRACKER_COLUMNS["resolution"]: resp.get(RESPONSE_COLUMNS["proposed_resolution"], ""),
+                TRACKER_COLUMNS["file"]: resp.get(RESPONSE_COLUMNS["file"], ""),
+                TRACKER_COLUMNS["date"]: resp.get(RESPONSE_COLUMNS["date_submission"], ""),
+                TRACKER_COLUMNS["status"]: "Open",
+                TRACKER_COLUMNS["response"]: "",
+                TRACKER_COLUMNS["updated_by"]: st.session_state.user_name,
+                TRACKER_COLUMNS["last_updated"]: datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            initial_rows.append(new_row)
+
+        tracker_df = pd.DataFrame(initial_rows)
+        update_entire_worksheet(tracker_ws, tracker_df)
+        st.success("Tracker initialized with data from responses.")
  
     # Define the mapping from response sheet columns to tracker sheet columns
     response_to_tracker_map = {
