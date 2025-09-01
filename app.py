@@ -39,7 +39,7 @@ WHITE_PALETTE = ["#FFFFFF", "#DADADA", "#BFBFBF", "#A6A6A6", "#8C8C8C"]
 
 # ---------- Data ----------
 def get_csv_path() -> str:
-    return os.getenv("CSV_PATH", r"C:\Users\malli\Downloads\DataCoSupplyChainDataset.csv")
+    return os.getenv("CSV_PATH", r"https://docs.google.com/spreadsheets/d/19bfG7i-rq7CBxb0Ll-h_O8HOvc3L19b-9FVT38aIvc4/edit?usp=sharing")
 
 @st.cache_data(show_spinner=False)
 def load_data(path: str):
